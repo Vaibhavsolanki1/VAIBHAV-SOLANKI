@@ -1,107 +1,134 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Terminal, Code2, Trophy, Cpu, Milestone, Activity, Mail } from 'lucide-react';
-import { GithubIcon } from './Icons';
+import { Sparkles, Code2, Cpu, Milestone, Mail, Layers } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
+import logoImg from '../assets/logo.png';
 
-interface NavItem {
-  id: string;
+export type PageId = 'home' | 'projects' | 'skills' | 'journey' | 'contact' | 'all';
+
+interface NavPageItem {
+  id: PageId;
   label: string;
   icon: React.ReactNode;
+  badge?: string;
 }
 
-const navItems: NavItem[] = [
-  { id: 'hero', label: 'Start', icon: <Sparkles className="w-3.5 h-3.5" /> },
-  { id: 'beginning', label: 'Story', icon: <Terminal className="w-3.5 h-3.5" /> },
-  { id: 'projects', label: 'Projects', icon: <Code2 className="w-3.5 h-3.5" /> },
-  { id: 'achievements', label: 'Wins', icon: <Trophy className="w-3.5 h-3.5" /> },
-  { id: 'skills', label: 'Skills', icon: <Cpu className="w-3.5 h-3.5" /> },
-  { id: 'journey', label: 'Timeline', icon: <Milestone className="w-3.5 h-3.5" /> },
-  { id: 'beyond', label: 'Beyond', icon: <Activity className="w-3.5 h-3.5" /> },
-  { id: 'github', label: 'GitHub', icon: <GithubIcon className="w-3.5 h-3.5" /> },
+const navPages: NavPageItem[] = [
+  { id: 'home', label: 'Home', icon: <Sparkles className="w-3.5 h-3.5" /> },
+  { id: 'projects', label: 'Projects', icon: <Code2 className="w-3.5 h-3.5" />, badge: '4' },
+  { id: 'skills', label: 'Skills & Wins', icon: <Cpu className="w-3.5 h-3.5" /> },
+  { id: 'journey', label: 'Journey', icon: <Milestone className="w-3.5 h-3.5" /> },
   { id: 'contact', label: 'Contact', icon: <Mail className="w-3.5 h-3.5" /> },
+  { id: 'all', label: 'All View', icon: <Layers className="w-3.5 h-3.5" /> },
 ];
 
-export const Navigation: React.FC = () => {
-  const [activeSection, setActiveSection] = useState('hero');
+interface NavigationProps {
+  activePage: PageId;
+  onPageChange: (page: PageId) => void;
+}
+
+export const Navigation = ({ activePage, onPageChange }: NavigationProps) => {
   const [scrolled, setScrolled] = useState(false);
+  const { theme } = useTheme();
+  const isMono = theme === 'mono';
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
-
-      const sections = navItems.map((item) => document.getElementById(item.id));
-      const scrollPos = window.scrollY + 200;
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = sections[i];
-        if (section && section.offsetTop <= scrollPos) {
-          setActiveSection(navItems[i].id);
-          break;
-        }
-      }
+      setScrolled(window.scrollY > 40);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
-    <motion.header
-      initial={{ y: -100, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, delay: 0.2 }}
-      className="fixed top-5 inset-x-0 z-40 flex justify-center px-4 pointer-events-none"
-    >
-      <nav
-        className={`pointer-events-auto flex items-center gap-1.5 p-1.5 rounded-full transition-all duration-500 ${
-          scrolled
-            ? 'glass-panel shadow-[0_10px_30px_rgba(0,0,0,0.5)] border-white/10 backdrop-blur-xl bg-slate-950/70'
-            : 'bg-slate-900/40 border border-white/5 backdrop-blur-md'
-        }`}
+    <>
+      {/* Persistent Top-Left Brand Logo */}
+      <motion.div
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed top-3.5 left-3 sm:top-5 sm:left-6 z-50 pointer-events-auto"
       >
-        <div className="flex items-center px-3 pl-4 border-r border-white/10 mr-1">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse mr-2" />
-          <span className="font-display font-bold text-xs tracking-wider uppercase text-white">
-            VS<span className="text-cyan-400">.2026</span>
-          </span>
-        </div>
+        <button
+          onClick={() => onPageChange('home')}
+          aria-label="Return to home page"
+          className="group flex items-center justify-center p-2 sm:p-2.5 rounded-full bg-neutral-950/90 border border-white/15 hover:border-red-500/50 backdrop-blur-xl transition-all cursor-pointer shadow-xl hover:bg-neutral-900"
+          data-cursor
+          data-cursor-text="Home"
+        >
+          <img
+            src={logoImg}
+            alt="VS Logo"
+            className="h-6 sm:h-7 w-auto max-w-[36px] object-contain group-hover:scale-110 transition-transform"
+          />
+        </button>
+      </motion.div>
 
-        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar max-w-[75vw] sm:max-w-none py-0.5">
-          {navItems.map((item) => {
-            const isActive = activeSection === item.id;
+      {/* Floating Center Page Switcher Header */}
+      <motion.header
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        className="fixed top-4 inset-x-0 z-40 flex justify-center px-3 sm:px-4 pointer-events-none"
+      >
+        <nav
+          aria-label="Main Navigation"
+          className={`pointer-events-auto flex items-center gap-1 p-1.5 rounded-full transition-all duration-300 shadow-2xl ${
+            scrolled
+              ? 'glass-panel border-white/10 backdrop-blur-2xl bg-neutral-950/85 shadow-[0_10px_35px_rgba(0,0,0,0.6)]'
+              : 'bg-neutral-950/70 border border-white/10 backdrop-blur-lg'
+          }`}
+        >
+          {/* Page Switcher Tabs */}
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5">
+          {navPages.map((item) => {
+            const isActive = activePage === item.id;
             return (
               <button
                 key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap ${
+                onClick={() => onPageChange(item.id)}
+                aria-label={`Navigate to ${item.label} page`}
+                className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 whitespace-nowrap cursor-pointer ${
                   isActive
-                    ? 'text-white font-semibold'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                    ? isMono
+                      ? 'text-black font-bold'
+                      : 'text-white font-semibold'
+                    : 'text-zinc-400 hover:text-zinc-100 hover:bg-white/5'
                 }`}
                 data-cursor
                 data-cursor-text={item.label}
               >
                 {isActive && (
                   <motion.div
-                    layoutId="activeTab"
-                    className="absolute inset-0 bg-gradient-to-r from-indigo-600/80 to-purple-600/80 rounded-full shadow-[0_0_12px_rgba(99,102,241,0.5)]"
-                    transition={{ type: 'spring', duration: 0.6, damping: 25 }}
+                    layoutId="activeNavPage"
+                    className={`absolute inset-0 rounded-full ${
+                      isMono ? 'bg-white' : 'bg-red-600'
+                    }`}
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                   />
                 )}
                 <span className="relative z-10">{item.icon}</span>
-                <span className="relative z-10 hidden md:inline">{item.label}</span>
+                <span className="relative z-10 hidden sm:inline">{item.label}</span>
+                {item.badge && (
+                  <span
+                    className={`relative z-10 text-[10px] px-1.5 py-0.2 rounded-full font-mono hidden md:inline ${
+                      isMono
+                        ? isActive
+                          ? 'bg-black/15 text-black'
+                          : 'bg-white/10 text-zinc-300'
+                        : 'bg-red-400/20 text-red-300'
+                    }`}
+                  >
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}
         </div>
       </nav>
     </motion.header>
+    </>
   );
 };

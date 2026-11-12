@@ -1,48 +1,178 @@
-import { SmoothScroll } from './components/SmoothScroll';
+import { useState, useEffect, lazy, Suspense } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SmoothScroll, resetSmoothScroll } from './components/SmoothScroll';
 import { CustomCursor } from './components/CustomCursor';
 import { ParticleField } from './components/ParticleField';
-import { Navigation } from './components/Navigation';
+import { Navigation, type PageId } from './components/Navigation';
+import { PagePlaceholder } from './components/PagePlaceholder';
+import { ThemeSwitcher } from './components/ThemeSwitcher';
+import { ShortcutsModal } from './components/ShortcutsModal';
+import { MascotCompanion } from './components/MascotCompanion';
+import { Footer } from './components/Footer';
+import { ThemeProvider } from './context/ThemeContext';
+import { LoadingScreen } from './components/LoadingScreen';
 
-// Chapters
-import { Hero } from './sections/Hero';
-import { Chapter1_Beginning } from './sections/Chapter1_Beginning';
-import { Chapter2_Projects } from './sections/Chapter2_Projects';
-import { Chapter3_Achievements } from './sections/Chapter3_Achievements';
-import { Chapter4_Skills } from './sections/Chapter4_Skills';
-import { Chapter5_Journey } from './sections/Chapter5_Journey';
-import { Chapter6_Beyond } from './sections/Chapter6_Beyond';
-import { Chapter7_GitHub } from './sections/Chapter7_GitHub';
-import { Chapter8_Vision } from './sections/Chapter8_Vision';
-import { Contact } from './sections/Contact';
+// Lazy-loaded pages for code-splitting, instant initial paint, and lightweight runtime DOM
+const HomePage = lazy(() => import('./pages/HomePage'));
+const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
+const SkillsPage = lazy(() => import('./pages/SkillsPage'));
+const JourneyPage = lazy(() => import('./pages/JourneyPage'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const AllChaptersPage = lazy(() => import('./pages/AllChaptersPage'));
 
-export function App() {
+const validPages: PageId[] = ['home', 'projects', 'skills', 'journey', 'contact', 'all'];
+
+const getPageFromHash = (): PageId => {
+  const hash = window.location.hash.replace('#/', '').replace('#', '').toLowerCase();
+  return validPages.includes(hash as PageId) ? (hash as PageId) : 'home';
+};
+
+function MainApp() {
+  const [activePage, setActivePage] = useState<PageId>(getPageFromHash);
+  const [isSiteLoading, setIsSiteLoading] = useState(true);
+  const [transitionState, setTransitionState] = useState<{
+    isTransitioning: boolean;
+    targetPage: PageId | null;
+  }>({
+    isTransitioning: false,
+    targetPage: null,
+  });
+
+  const triggerPageTransition = (newPage: PageId) => {
+    if (newPage === activePage) {
+      resetSmoothScroll();
+      return;
+    }
+    setTransitionState({
+      isTransitioning: true,
+      targetPage: newPage,
+    });
+  };
+
+  // Sync state with browser hash navigation (back/forward history and direct links)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const newPage = getPageFromHash();
+      if (newPage !== activePage) {
+        triggerPageTransition(newPage);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [activePage]);
+
+  const handlePageChange = (page: PageId) => {
+    triggerPageTransition(page);
+  };
+
+  const handleTransitionMidpoint = () => {
+    if (transitionState.targetPage) {
+      setActivePage(transitionState.targetPage);
+      window.location.hash =
+        transitionState.targetPage === 'home' ? '' : `#${transitionState.targetPage}`;
+      resetSmoothScroll();
+    }
+  };
+
+  const handleTransitionComplete = () => {
+    setTransitionState({ isTransitioning: false, targetPage: null });
+  };
+
+  const renderActivePage = () => {
+    switch (activePage) {
+      case 'home':
+        return <HomePage onNavigate={(p) => handlePageChange(p as PageId)} />;
+      case 'projects':
+        return <ProjectsPage />;
+      case 'skills':
+        return <SkillsPage />;
+      case 'journey':
+        return <JourneyPage />;
+      case 'contact':
+        return <ContactPage />;
+      case 'all':
+        return <AllChaptersPage onNavigate={(p) => handlePageChange(p as PageId)} />;
+      default:
+        return <HomePage onNavigate={(p) => handlePageChange(p as PageId)} />;
+    }
+  };
+
   return (
     <SmoothScroll>
-      <div className="relative min-h-screen bg-[#050816] text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200 antialiased font-sans overflow-x-hidden">
+      {/* 1. Initial Site Boot Sequence with Centered Monogram Logo */}
+      <AnimatePresence>
+        {isSiteLoading && (
+          <LoadingScreen
+            variant="intro"
+            onComplete={() => setIsSiteLoading(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 2. Page-to-Page Loading Transition with Centered Monogram Logo */}
+      <AnimatePresence>
+        {transitionState.isTransitioning && transitionState.targetPage && (
+          <LoadingScreen
+            variant="transition"
+            targetPageName={transitionState.targetPage}
+            onMidpoint={handleTransitionMidpoint}
+            onComplete={handleTransitionComplete}
+          />
+        )}
+      </AnimatePresence>
+
+      <div className="relative min-h-screen selection:bg-red-500/30 selection:text-red-200">
         {/* Custom AI Cursor Orb */}
         <CustomCursor />
 
         {/* 3D Particle Space Field */}
         <ParticleField />
 
-        {/* Floating Chapter Navigation */}
-        <Navigation />
+        {/* Floating Chapter / Page Navigation Bar */}
+        <Navigation activePage={activePage} onPageChange={handlePageChange} />
 
-        {/* Main Storyline Scroll Experience */}
-        <main className="relative z-10 space-y-12 sm:space-y-20">
-          <Hero />
-          <Chapter1_Beginning />
-          <Chapter2_Projects />
-          <Chapter3_Achievements />
-          <Chapter4_Skills />
-          <Chapter5_Journey />
-          <Chapter6_Beyond />
-          <Chapter7_GitHub />
-          <Chapter8_Vision />
-          <Contact />
+        {/* Top-Right Floating Theme Switcher Pill */}
+        <ThemeSwitcher />
+
+        {/* Persistent Floating Keyboard Shortcuts Trigger & Guide */}
+        <ShortcutsModal onNavigate={handlePageChange} />
+
+        {/* Persistent Floating Mascot Companion at Bottom-Right */}
+        <MascotCompanion
+          activePage={activePage}
+          onNavigateHome={() => handlePageChange('home')}
+        />
+
+        {/* Main Content Router with Smooth Page Transitions */}
+        <main className="relative z-10">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activePage}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+            >
+              <Suspense fallback={<PagePlaceholder />}>
+                {renderActivePage()}
+              </Suspense>
+            </motion.div>
+          </AnimatePresence>
         </main>
+
+        {/* Global Footer with Cyber Mascot on every page */}
+        <Footer onNavigate={handlePageChange} />
       </div>
     </SmoothScroll>
+  );
+}
+
+export function App() {
+  return (
+    <ThemeProvider>
+      <MainApp />
+    </ThemeProvider>
   );
 }
 

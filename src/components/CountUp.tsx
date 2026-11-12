@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useInView } from 'framer-motion';
 
 interface CountUpProps {
@@ -10,14 +10,14 @@ interface CountUpProps {
   className?: string;
 }
 
-export const CountUp: React.FC<CountUpProps> = ({
+export const CountUp = ({
   end,
   duration = 2,
   prefix = '',
   suffix = '',
   decimals = 0,
   className = '',
-}) => {
+}: CountUpProps) => {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });

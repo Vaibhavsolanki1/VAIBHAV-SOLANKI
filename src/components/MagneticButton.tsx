@@ -1,25 +1,31 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode, type MouseEvent } from 'react';
 import { motion } from 'framer-motion';
 
 interface MagneticButtonProps {
-  children: React.ReactNode;
+  children: ReactNode;
   onClick?: () => void;
   className?: string;
   variant?: 'primary' | 'secondary' | 'glass';
   href?: string;
+  target?: string;
+  rel?: string;
+  'aria-label'?: string;
 }
 
-export const MagneticButton: React.FC<MagneticButtonProps> = ({
+export const MagneticButton = ({
   children,
   onClick,
   className = '',
   variant = 'primary',
   href,
-}) => {
+  target,
+  rel,
+  'aria-label': ariaLabel,
+}: MagneticButtonProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (!ref.current) return;
     const { left, top, width, height } = ref.current.getBoundingClientRect();
     const x = (e.clientX - (left + width / 2)) * 0.35;
@@ -33,9 +39,9 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
 
   const variantStyles = {
     primary:
-      'bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 text-white font-medium shadow-[0_0_25px_rgba(99,102,241,0.4)] hover:shadow-[0_0_35px_rgba(99,102,241,0.7)]',
+      'bg-red-600 hover:bg-red-500 text-white font-medium transition-colors',
     secondary:
-      'bg-slate-900/80 text-slate-200 border border-slate-700/60 hover:border-indigo-500/50 hover:text-white',
+      'bg-zinc-900 text-zinc-200 border border-zinc-700/60 hover:border-red-500/50 hover:text-white',
     glass:
       'glass-card text-white hover:bg-white/10 border-white/10 hover:border-white/20',
   };
@@ -58,12 +64,29 @@ export const MagneticButton: React.FC<MagneticButtonProps> = ({
   );
 
   if (href) {
+    const isExternal = href.startsWith('http') || href.startsWith('//');
     return (
-      <a href={href} onClick={onClick}>
+      <a
+        href={href}
+        onClick={onClick}
+        target={target || (isExternal ? '_blank' : undefined)}
+        rel={rel || (isExternal ? 'noopener noreferrer' : undefined)}
+        aria-label={ariaLabel}
+        className="inline-block"
+      >
         {content}
       </a>
     );
   }
 
-  return <button onClick={onClick}>{content}</button>;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className="inline-block bg-transparent border-0 p-0 cursor-pointer"
+    >
+      {content}
+    </button>
+  );
 };

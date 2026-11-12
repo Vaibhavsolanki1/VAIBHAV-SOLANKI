@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion, type Variants } from 'framer-motion';
 
 interface TextRevealProps {
@@ -7,11 +6,11 @@ interface TextRevealProps {
   delay?: number;
 }
 
-export const TextReveal: React.FC<TextRevealProps> = ({
+export const TextReveal = ({
   children,
   className = '',
   delay = 0,
-}) => {
+}: TextRevealProps) => {
   const words = children.split(' ');
 
   const container: Variants = {

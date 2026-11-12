@@ -1,24 +1,49 @@
-import React, { useRef, useMemo } from 'react';
+import { useRef, useMemo, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
+import { useTheme } from '../context/ThemeContext';
 
-const ParticleStars: React.FC = () => {
-  const count = 1500;
+const PARTICLE_COUNT = 850;
+
+const ParticleStars = ({ theme }: { theme: string }) => {
   const meshRef = useRef<THREE.Points>(null!);
 
   const [positions, colors] = useMemo(() => {
-    const posArr = new Float32Array(count * 3);
-    const colorArr = new Float32Array(count * 3);
+    const posArr = new Float32Array(PARTICLE_COUNT * 3);
+    const colorArr = new Float32Array(PARTICLE_COUNT * 3);
 
-    const palette = [
-      new THREE.Color('#38bdf8'), // cyan
-      new THREE.Color('#818cf8'), // indigo
-      new THREE.Color('#c084fc'), // purple
-      new THREE.Color('#ffffff'), // white
-      new THREE.Color('#60a5fa'), // blue
-    ];
+    let palette: THREE.Color[];
 
-    for (let i = 0; i < count; i++) {
+    if (theme === 'mono') {
+      palette = [
+        new THREE.Color('#ffffff'),
+        new THREE.Color('#e4e4e7'),
+        new THREE.Color('#a1a1aa'),
+        new THREE.Color('#71717a'),
+        new THREE.Color('#52525b'),
+      ];
+    } else if (theme === 'cosmic') {
+      // Cosmic: Black sky, Pink secondary, Purple tertiary + starlight white
+      palette = [
+        new THREE.Color('#ec4899'), // pink secondary
+        new THREE.Color('#f472b6'), // soft pink
+        new THREE.Color('#a855f7'), // purple tertiary
+        new THREE.Color('#9333ea'), // deep purple
+        new THREE.Color('#ffffff'), // star white
+      ];
+    } else {
+      // Default: Crimson Red, Pure White, Silver Grey, Obsidian
+      palette = [
+        new THREE.Color('#ef4444'), // crimson red
+        new THREE.Color('#ffffff'), // pure white
+        new THREE.Color('#fca5a5'), // soft rose
+        new THREE.Color('#71717a'), // silver grey
+        new THREE.Color('#dc2626'), // deep ruby
+        new THREE.Color('#e4e4e7'), // platinum
+      ];
+    }
+
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
       const u = Math.random();
       const v = Math.random();
       const theta = u * 2.0 * Math.PI;
@@ -40,7 +65,7 @@ const ParticleStars: React.FC = () => {
     }
 
     return [posArr, colorArr];
-  }, [count]);
+  }, [theme]);
 
   useFrame((_, delta) => {
     if (meshRef.current) {
@@ -65,7 +90,7 @@ const ParticleStars: React.FC = () => {
         size={0.06}
         vertexColors
         transparent
-        opacity={0.7}
+        opacity={0.75}
         sizeAttenuation
         depthWrite={false}
         blending={THREE.AdditiveBlending}
@@ -74,15 +99,20 @@ const ParticleStars: React.FC = () => {
   );
 };
 
-export const ParticleField: React.FC = () => {
+export const ParticleField = () => {
+  const { theme } = useTheme();
+
   return (
-    <div className="fixed inset-0 pointer-events-none z-0">
+    <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true">
       <Canvas
         camera={{ position: [0, 0, 8], fov: 60 }}
-        gl={{ antialias: true, alpha: true }}
+        dpr={[1, 1.5]}
+        gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
       >
         <ambientLight intensity={0.5} />
-        <ParticleStars />
+        <Suspense fallback={null}>
+          <ParticleStars key={theme} theme={theme} />
+        </Suspense>
       </Canvas>
     </div>
   );

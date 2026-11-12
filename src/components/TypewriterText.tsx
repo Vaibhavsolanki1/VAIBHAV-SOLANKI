@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 interface TypewriterTextProps {
   phrases: string[];
@@ -8,13 +8,13 @@ interface TypewriterTextProps {
   className?: string;
 }
 
-export const TypewriterText: React.FC<TypewriterTextProps> = ({
+export const TypewriterText = ({
   phrases,
   typingSpeed = 90,
   deletingSpeed = 50,
   pauseTime = 2000,
   className = '',
-}) => {
+}: TypewriterTextProps) => {
   const [text, setText] = useState('');
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -48,7 +48,7 @@ export const TypewriterText: React.FC<TypewriterTextProps> = ({
   return (
     <span className={`inline-flex items-center ${className}`}>
       <span>{text}</span>
-      <span className="w-0.5 h-6 ml-1 bg-cyan-400 animate-pulse font-mono" />
+      <span className="w-0.5 h-6 ml-1 bg-red-500 animate-pulse font-mono" />
     </span>
   );
 };

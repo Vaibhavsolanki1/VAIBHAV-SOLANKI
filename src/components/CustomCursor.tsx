@@ -1,7 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, useSpring, useMotionValue } from 'framer-motion';
+import { useTheme } from '../context/ThemeContext';
 
-export const CustomCursor: React.FC = () => {
+export const CustomCursor = () => {
+  const { theme } = useTheme();
+  const isMono = theme === 'mono';
+  const isCosmic = theme === 'cosmic';
   const [isHovered, setIsHovered] = useState(false);
   const [hoverText, setHoverText] = useState('');
   const [isVisible, setIsVisible] = useState(false);
@@ -9,8 +13,8 @@ export const CustomCursor: React.FC = () => {
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
 
-  // Smooth springs for orb physics
-  const springConfig = { damping: 25, stiffness: 250 };
+  // Fast, ultra-responsive spring physics for instantaneous fluid cursor tracking
+  const springConfig = { damping: 36, stiffness: 850, mass: 0.12 };
   const orbX = useSpring(cursorX, springConfig);
   const orbY = useSpring(cursorY, springConfig);
 
@@ -57,9 +61,10 @@ export const CustomCursor: React.FC = () => {
 
   return (
     <>
-      {/* Outer Glowing AI Orb */}
+      {/* Outer Precise Tracking Ring */}
       <motion.div
-        className="pointer-events-none fixed top-0 left-0 z-50 rounded-full flex items-center justify-center mix-blend-screen"
+        aria-hidden="true"
+        className="pointer-events-none fixed top-0 left-0 z-[9999] rounded-full flex items-center justify-center border border-white/30"
         style={{
           x: orbX,
           y: orbY,
@@ -67,19 +72,27 @@ export const CustomCursor: React.FC = () => {
           translateY: '-50%',
         }}
         animate={{
-          width: isHovered ? (hoverText ? 80 : 50) : 32,
-          height: isHovered ? (hoverText ? 80 : 50) : 32,
-          background: isHovered
-            ? 'radial-gradient(circle, rgba(99, 102, 241, 0.8) 0%, rgba(139, 92, 246, 0.4) 60%, rgba(6, 182, 212, 0) 100%)'
-            : 'radial-gradient(circle, rgba(56, 189, 248, 0.6) 0%, rgba(99, 102, 241, 0.3) 50%, rgba(0, 0, 0, 0) 100%)',
-          boxShadow: isHovered
-            ? '0 0 30px rgba(139, 92, 246, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.5)'
-            : '0 0 20px rgba(56, 189, 248, 0.4)',
+          width: isHovered ? (hoverText ? 72 : 44) : 28,
+          height: isHovered ? (hoverText ? 72 : 44) : 28,
+          borderColor: isHovered
+            ? isMono
+              ? 'rgba(255, 255, 255, 0.75)'
+              : isCosmic
+              ? 'rgba(236, 72, 153, 0.85)'
+              : 'rgba(239, 68, 68, 0.8)'
+            : 'rgba(255, 255, 255, 0.25)',
+          backgroundColor: isHovered
+            ? isMono
+              ? 'rgba(255, 255, 255, 0.08)'
+              : isCosmic
+              ? 'rgba(168, 85, 247, 0.12)'
+              : 'rgba(239, 68, 68, 0.08)'
+            : 'rgba(255, 255, 255, 0.02)',
         }}
-        transition={{ type: 'spring', damping: 20, stiffness: 300, mass: 0.5 }}
+        transition={{ type: 'spring', damping: 28, stiffness: 600, mass: 0.15 }}
       >
         {hoverText && (
-          <span className="text-[10px] font-mono tracking-wider font-semibold text-white uppercase text-center px-1">
+          <span className="text-[9px] font-mono tracking-widest font-bold text-white uppercase text-center px-1">
             {hoverText}
           </span>
         )}
@@ -87,7 +100,14 @@ export const CustomCursor: React.FC = () => {
 
       {/* Precise Center Core Dot */}
       <motion.div
-        className="pointer-events-none fixed top-0 left-0 z-50 w-2 h-2 bg-white rounded-full shadow-[0_0_10px_#ffffff]"
+        aria-hidden="true"
+        className={`pointer-events-none fixed top-0 left-0 z-[9999] w-1.5 h-1.5 rounded-full ${
+          isMono
+            ? 'bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)]'
+            : isCosmic
+            ? 'bg-pink-500 shadow-[0_0_8px_rgba(236,72,153,0.85)]'
+            : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]'
+        }`}
         style={{
           x: cursorX,
           y: cursorY,
