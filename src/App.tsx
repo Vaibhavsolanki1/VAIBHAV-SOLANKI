@@ -8,6 +8,7 @@ import { PagePlaceholder } from './components/PagePlaceholder';
 import { ThemeSwitcher } from './components/ThemeSwitcher';
 import { ShortcutsModal } from './components/ShortcutsModal';
 import { MascotCompanion } from './components/MascotCompanion';
+import { MusicPlayer } from './components/MusicPlayer';
 import { Footer } from './components/Footer';
 import { ThemeProvider } from './context/ThemeContext';
 import { LoadingScreen } from './components/LoadingScreen';
@@ -137,6 +138,9 @@ function MainApp() {
 
         {/* Persistent Floating Keyboard Shortcuts Trigger & Guide */}
         <ShortcutsModal onNavigate={handlePageChange} />
+
+        {/* Draggable Rotating Vinyl Disc & Audio Deck */}
+        <MusicPlayer />
 
         {/* Persistent Floating Mascot Companion at Bottom-Right */}
         <MascotCompanion

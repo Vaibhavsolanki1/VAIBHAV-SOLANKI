@@ -27,7 +27,7 @@ const featuredProjects: Project[] = [
     id: 'maitri',
     title: 'MAITRI',
     subtitle: 'AI Wellness Companion',
-    role: 'Founder & Lead Architect',
+    role: 'Founder & CEO',
     description:
       'AI-powered mental wellness companion with personalized health tracking and emotion processing.',
     tech: ['TypeScript', 'Node.js', 'PostgreSQL', 'Python', 'Tailwind', 'LLMs'],

@@ -46,21 +46,40 @@ export const LoadingScreen = ({
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
+      initial={{ opacity: 0, scale: 1 }}
+      animate={{ opacity: 1, scale: 1 }}
       exit={{
         opacity: 0,
-        transition: { duration: isTransition ? 0.3 : 0.6, ease: [0.16, 1, 0.3, 1] },
+        scale: 2.4,
+        filter: 'blur(12px)',
+        transition: {
+          duration: isTransition ? 0.55 : 0.85,
+          ease: [0.22, 1, 0.36, 1],
+        },
       }}
       transition={{ duration: isTransition ? 0.2 : 0.4 }}
-      className="fixed inset-0 z-[99999] bg-[var(--theme-bg)] flex flex-col items-center justify-center overflow-hidden select-none cursor-default"
+      className="fixed inset-0 z-[99999] bg-[var(--theme-bg)] flex flex-col items-center justify-center overflow-hidden select-none cursor-default origin-center"
       aria-label="Loading portfolio experience"
     >
       {/* Clean Grid Overlay */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
+      <motion.div
+        exit={{ scale: 3, opacity: 0, transition: { duration: isTransition ? 0.5 : 0.8 } }}
+        className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none origin-center"
+      />
 
       {/* Center Stage Container */}
-      <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-md mx-auto">
+      <motion.div
+        exit={{
+          scale: 3.2,
+          opacity: 0,
+          filter: 'blur(16px)',
+          transition: {
+            duration: isTransition ? 0.5 : 0.8,
+            ease: [0.22, 1, 0.36, 1],
+          },
+        }}
+        className="relative z-10 flex flex-col items-center text-center px-4 max-w-md mx-auto origin-center"
+      >
         {/* Monogram Logo - Crisp, clean, matte */}
         <motion.div
           initial={{ scale: isTransition ? 0.95 : 0.88, opacity: 0 }}
@@ -91,7 +110,7 @@ export const LoadingScreen = ({
             {isTransition ? targetPageName.toUpperCase() || 'PORTFOLIO' : 'PORTFOLIO EXPERIENCE'}
           </p>
         </motion.div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };

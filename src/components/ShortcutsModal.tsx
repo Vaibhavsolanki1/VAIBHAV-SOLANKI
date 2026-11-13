@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Keyboard, X, Compass, Palette, Zap } from 'lucide-react';
+import { Keyboard, X, Compass, Palette, Zap, Disc } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import type { PageId } from './Navigation';
 
@@ -39,6 +39,14 @@ const shortcutGroups: ShortcutGroup[] = [
     items: [
       { keys: ['T'], label: 'Open / Close Theme Dial' },
       { keys: ['Shift', 'T'], label: 'Cycle Theme' },
+    ],
+  },
+  {
+    title: 'Audio & Music',
+    icon: <Disc className="w-3.5 h-3.5 text-red-400" />,
+    items: [
+      { keys: ['M'], label: 'Toggle Play / Pause Music' },
+      { keys: ['Shift', 'M'], label: 'Open Music Player Deck' },
     ],
   },
   {

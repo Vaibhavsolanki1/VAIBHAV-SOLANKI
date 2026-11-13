@@ -9,6 +9,7 @@ interface Achievement {
   title: string;
   count: number;
   suffix?: string;
+  customDisplay?: string;
   description: string;
   icon: ReactNode;
   badge: string;
@@ -38,12 +39,13 @@ export const Chapter3_Achievements = () => {
       color: 'pink',
     },
     {
-      title: 'Founder of MAITRI',
+      title: 'Founder & CEO at MAITRI',
+      customDisplay: 'CEO',
       count: 1,
-      suffix: 'st',
+      suffix: '',
       description: 'Product, AI, and team lead for 5 engineers.',
       icon: <Flame className="w-6 h-6 text-red-500" />,
-      badge: 'Startup Founder',
+      badge: 'Founder & CEO',
       color: 'pink',
     },
     {
@@ -116,7 +118,11 @@ export const Chapter3_Achievements = () => {
                 </div>
 
                 <div className="font-display text-4xl sm:text-5xl font-extrabold text-white mb-2 tracking-tight">
-                  <CountUp end={item.count} suffix={item.suffix} />
+                  {item.customDisplay ? (
+                    item.customDisplay
+                  ) : (
+                    <CountUp end={item.count} suffix={item.suffix} />
+                  )}
                 </div>
 
                 <h3 className="font-display text-lg font-bold text-zinc-200 mb-2">
