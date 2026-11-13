@@ -90,29 +90,35 @@ export const ThemeSwitcher = () => {
 
   return (
     <>
-      {/* Single Circular Theme Pill Trigger (Top-Right) */}
+      {/* Theme Pill Trigger with "Change the Theme" text (Top-Right) */}
       <div className="fixed top-3.5 right-3 sm:top-5 sm:right-6 z-50 pointer-events-auto">
         <motion.button
-          whileHover={{ scale: 1.08 }}
-          whileTap={{ scale: 0.94 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(true)}
-          aria-label={`Open theme dial (current: ${activeOption.label})`}
-          title={`Theme: ${activeOption.label}`}
-          className="group relative w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-neutral-950/90 border border-white/15 hover:border-red-500/60 backdrop-blur-xl flex items-center justify-center shadow-xl cursor-pointer transition-colors"
+          aria-label={`Change the theme (current: ${activeOption.label})`}
+          title={`Change the Theme (Press T) • Current: ${activeOption.label}`}
+          className="group relative flex items-center gap-2 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full bg-neutral-950/90 border border-white/15 hover:border-[var(--theme-primary,rgba(239,68,68,0.6))] backdrop-blur-xl shadow-xl cursor-pointer transition-all duration-200"
           data-cursor
           data-cursor-text="Theme"
         >
-          {/* Subtle inner accent ring */}
+          {/* Theme Icon with Accent Color */}
           <span
-            className="absolute inset-1 rounded-full border opacity-35 group-hover:opacity-80 transition-opacity pointer-events-none"
-            style={{ borderColor: activeOption.accentColor }}
-          />
-          <span
-            className="relative z-10 transition-transform duration-300 group-hover:rotate-12"
+            className="relative z-10 flex items-center justify-center transition-transform duration-300 group-hover:rotate-12"
             style={{ color: activeOption.accentColor }}
           >
-            {activeOption.icon('w-4 h-4 sm:w-[18px] sm:h-[18px]')}
+            {activeOption.icon('w-3.5 h-3.5 sm:w-4 sm:h-4')}
           </span>
+
+          {/* Text: Change the Theme */}
+          <span className="text-[11px] sm:text-xs font-mono tracking-wider text-zinc-300 group-hover:text-white transition-colors whitespace-nowrap">
+            Change the Theme
+          </span>
+
+          {/* Keyboard shortcut hint */}
+          <kbd className="hidden sm:inline-block text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 border border-white/15 text-zinc-400 group-hover:text-zinc-200 leading-none">
+            T
+          </kbd>
         </motion.button>
       </div>
 
