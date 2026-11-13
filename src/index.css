@@ -28,8 +28,8 @@
   --theme-panel: rgba(13, 14, 18, 0.75);
   --theme-border: rgba(255, 255, 255, 0.08);
   --theme-accent: #ef4444;
-  --theme-accent-glow: rgba(239, 68, 68, 0.35);
-  --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #fca5a5 45%, #ef4444 100%);
+  --theme-accent-glow: rgba(239, 68, 68, 0.75);
+  --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #ff8080 35%, #ef4444 75%, #f87171 100%);
 }
 
 html[data-theme="mono"] {
@@ -38,8 +38,8 @@ html[data-theme="mono"] {
   --theme-panel: rgba(6, 6, 7, 0.92);
   --theme-border: rgba(161, 161, 170, 0.18);
   --theme-accent: #ffffff;
-  --theme-accent-glow: rgba(255, 255, 255, 0.22);
-  --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #f4f4f5 50%, #71717a 100%);
+  --theme-accent-glow: rgba(255, 255, 255, 0.85);
+  --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #ffffff 40%, #f4f4f5 75%, #ffffff 100%);
 
   /* Primary Dark Surfaces */
   --color-neutral-950: #000000;
@@ -117,8 +117,8 @@ html[data-theme="cosmic"] {
   --theme-panel: rgba(8, 5, 12, 0.9);
   --theme-border: rgba(168, 85, 247, 0.22);
   --theme-accent: #ec4899;
-  --theme-accent-glow: rgba(236, 72, 153, 0.35);
-  --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #f472b6 50%, #a855f7 100%);
+  --theme-accent-glow: rgba(236, 72, 153, 0.75);
+  --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #f472b6 40%, #ec4899 75%, #d946ef 100%);
 
   /* Primary Black Surfaces */
   --color-neutral-950: #000000;
@@ -226,35 +226,102 @@ body {
   transform: translateY(-3px);
 }
 
-/* Reimagined Crimson, White, Grey, and Black Text Gradients */
+/* Radiant, Glowing & Highly Visible Highlighted Text Gradients */
 .text-gradient {
   background: var(--theme-text-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px var(--theme-accent-glow)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.45));
+  font-weight: 800;
+  display: inline-block;
 }
 
 .text-gradient-red {
-  background: linear-gradient(135deg, #ffffff 0%, #f87171 45%, #ef4444 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #ff8080 35%, #ef4444 80%, #dc2626 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.7)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.45));
+  font-weight: 800;
+  display: inline-block;
 }
 
 .text-gradient-cyan {
-  background: linear-gradient(135deg, #ffffff 0%, #fca5a5 45%, #ef4444 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #fca5a5 35%, #ef4444 80%, #dc2626 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px var(--theme-accent-glow)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.45));
+  font-weight: 800;
+  display: inline-block;
 }
 
 html[data-theme="cosmic"] .text-gradient-cyan {
-  background: linear-gradient(135deg, #ffffff 0%, #f472b6 50%, #a855f7 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #f472b6 40%, #ec4899 80%, #a855f7 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 18px rgba(236, 72, 153, 0.8)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.45));
+  font-weight: 800;
+  display: inline-block;
 }
 
 .text-gradient-gold {
-  background: linear-gradient(135deg, #ffffff 0%, #fecaca 50%, #dc2626 100%);
+  background: linear-gradient(135deg, #ffffff 0%, #fecaca 40%, #ef4444 80%, #dc2626 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 16px rgba(239, 68, 68, 0.7)) drop-shadow(0 0 2px rgba(255, 255, 255, 0.45));
+  font-weight: 800;
+  display: inline-block;
+}
+
+/* Custom Audio Deck Range Sliders */
+input[type="range"].player-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  height: 6px;
+  border-radius: 9999px;
+  outline: none;
+}
+
+input[type="range"].player-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: transparent;
+}
+
+input[type="range"].player-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid var(--theme-accent, #ef4444);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.6), 0 0 14px var(--theme-accent-glow, rgba(239, 68, 68, 0.7));
+  margin-top: -4px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+input[type="range"].player-slider:hover::-webkit-slider-thumb {
+  transform: scale(1.25);
+  box-shadow: 0 0 18px var(--theme-accent-glow, rgba(239, 68, 68, 0.95));
+}
+
+input[type="range"].player-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: transparent;
+}
+
+input[type="range"].player-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid var(--theme-accent, #ef4444);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.6), 0 0 14px var(--theme-accent-glow, rgba(239, 68, 68, 0.7));
+  cursor: pointer;
 }
 
 /* Subtle Matte Shadows (No Neon Glow) */

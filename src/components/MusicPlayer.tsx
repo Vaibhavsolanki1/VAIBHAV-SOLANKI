@@ -446,10 +446,10 @@ export const MusicPlayer = () => {
         </div>
       </motion.div>
 
-      {/* MUSIC PLAYER FLOATING MODAL ON THE RIGHT SIDE */}
+      {/* MUSIC PLAYER CENTERED MODAL */}
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-50 flex items-end justify-end p-4 sm:p-6 pb-20 sm:pb-24 pointer-events-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop Blur to close on click outside */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -457,16 +457,16 @@ export const MusicPlayer = () => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/50 backdrop-blur-xs pointer-events-auto"
+              className="fixed inset-0 bg-black/70 backdrop-blur-md cursor-pointer"
             />
 
-            {/* Glassmorphic Player Card Docked on the Right Side */}
+            {/* Glassmorphic Player Card - Perfectly Centered */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, x: 24, y: 12 }}
-              animate={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, x: 24, y: 12 }}
+              initial={{ opacity: 0, scale: 0.9, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 16 }}
               transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-              className="relative pointer-events-auto z-10 w-full max-w-sm bg-neutral-950/95 border border-white/15 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-2xl overflow-hidden"
+              className="relative z-10 w-full max-w-sm bg-neutral-950/95 border border-white/15 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-2xl overflow-hidden"
               style={{
                 boxShadow: isPlaying
                   ? `0 25px 60px -15px ${sec.haloColor}`
@@ -510,11 +510,11 @@ export const MusicPlayer = () => {
               </div>
 
               {/* Showcase Turntable & Vinyl in Secondary Colour */}
-              <div className="relative py-5 flex flex-col items-center justify-center">
-                {/* Turntable Sleeve with Spinning Vinyl in Secondary Colour */}
-                <div className="relative w-36 h-36 flex items-center justify-center">
+              <div className="relative py-4 flex flex-col items-center justify-center">
+                {/* Turntable Sleeve with Spinning Vinyl */}
+                <div className="relative w-36 h-36 mx-auto flex items-center justify-center">
                   {/* Turntable Base Platter */}
-                  <div className="absolute inset-0 rounded-full bg-neutral-900 border border-white/10 shadow-inner" />
+                  <div className="absolute inset-0 rounded-full bg-neutral-900/90 border border-white/10 shadow-inner" />
 
                   {/* Spinning Vinyl Styled in Theme's Secondary Colour */}
                   <div
@@ -546,27 +546,30 @@ export const MusicPlayer = () => {
 
                     {/* Vinyl Center Label */}
                     <div
-                      className={`relative z-10 w-12 h-12 rounded-full ${sec.centerBg} p-0.5 border flex items-center justify-center shadow-lg`}
+                      className={`relative z-10 w-11 h-11 rounded-full ${sec.centerBg} p-0.5 border flex items-center justify-center shadow-lg`}
                     >
                       <img
                         src={activeMascot}
                         alt="Center Mascot"
-                        className="w-full h-full object-cover rounded-full"
+                        className="w-full h-full object-cover rounded-full select-none"
                       />
                       <div
-                        className={`absolute w-2.5 h-2.5 rounded-full ${sec.centerSpindle}`}
+                        className={`absolute w-2 h-2 rounded-full ${sec.centerSpindle}`}
                       />
                     </div>
                   </div>
 
                   {/* Tonearm Needle */}
                   <motion.div
-                    animate={{ rotate: isPlaying ? 24 : 0 }}
+                    animate={{ rotate: isPlaying ? 22 : 0 }}
                     transition={{ duration: 0.4, ease: 'easeOut' }}
-                    className="absolute -top-2 -right-1 w-12 h-20 origin-top-right pointer-events-none z-20"
+                    className="absolute -top-1 right-1 w-10 h-18 origin-top-right pointer-events-none z-20"
                   >
-                    <div className="w-1.5 h-16 bg-gradient-to-b from-zinc-300 to-zinc-500 rounded-full shadow-md ml-auto mr-1" />
-                    <div className="w-3 h-4 bg-red-600 rounded-sm -mt-1 ml-auto mr-0.5 shadow-sm" />
+                    <div className="w-1.5 h-14 bg-gradient-to-b from-zinc-200 to-zinc-400 rounded-full shadow-md ml-auto mr-1" />
+                    <div
+                      className="w-3 h-3.5 rounded-sm -mt-0.5 ml-auto mr-0.5 shadow-sm"
+                      style={{ backgroundColor: sec.haloColor }}
+                    />
                   </motion.div>
                 </div>
 
@@ -590,8 +593,8 @@ export const MusicPlayer = () => {
               </div>
 
               {/* Progress Bar & Timestamps */}
-              <div className="space-y-1.5 pt-1">
-                <div className="relative flex items-center group">
+              <div className="space-y-1.5 pt-2">
+                <div className="relative flex items-center group w-full">
                   <input
                     type="range"
                     min="0"
@@ -600,77 +603,102 @@ export const MusicPlayer = () => {
                     value={currentTime}
                     onChange={handleSeek}
                     aria-label="Seek audio position"
-                    className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-[var(--theme-primary)] focus:outline-none"
+                    className="player-slider w-full cursor-pointer focus:outline-none"
                     style={{
                       background: `linear-gradient(to right, var(--theme-primary) 0%, var(--theme-primary) ${progressPercent}%, #27272a ${progressPercent}%, #27272a 100%)`,
                     }}
                   />
                 </div>
-                <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400">
+                <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 px-0.5">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
                 </div>
               </div>
 
-              {/* Playback Controls */}
-              <div className="flex items-center justify-between pt-3.5">
-                {/* Loop toggle */}
-                <button
-                  onClick={() => setIsLooping((prev) => !prev)}
-                  className={`p-2 rounded-full transition-colors cursor-pointer ${
-                    isLooping
-                      ? 'text-[var(--theme-primary)] bg-white/5'
-                      : 'text-zinc-500 hover:text-zinc-300'
-                  }`}
-                  title={isLooping ? 'Loop: On' : 'Loop: Off'}
-                  aria-label="Toggle loop"
-                >
-                  <Repeat className="w-4 h-4" />
-                </button>
+              {/* Playback Controls - 100% Mathematically Centered Grid */}
+              <div className="grid grid-cols-5 items-center pt-3.5">
+                {/* 1. Loop toggle (Left) */}
+                <div className="flex justify-start">
+                  <button
+                    onClick={() => setIsLooping((prev) => !prev)}
+                    className={`p-2.5 rounded-full transition-colors cursor-pointer ${
+                      isLooping
+                        ? 'text-[var(--theme-primary)] bg-white/5 border border-white/10'
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                    title={isLooping ? 'Loop: On' : 'Loop: Off'}
+                    aria-label="Toggle loop"
+                  >
+                    <Repeat className="w-4 h-4" />
+                  </button>
+                </div>
 
-                {/* Rewind 10s */}
-                <button
-                  onClick={() => handleSkip(-10)}
-                  className="p-2 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                  title="Rewind 10 seconds"
-                  aria-label="Rewind 10 seconds"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
+                {/* 2. Rewind 10s (Mid-Left) */}
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => handleSkip(-10)}
+                    className="p-2.5 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                    title="Rewind 10 seconds"
+                    aria-label="Rewind 10 seconds"
+                  >
+                    <RotateCcw className="w-4.5 h-4.5" />
+                  </button>
+                </div>
 
-                {/* Primary Play / Pause Button in Secondary Color Accent */}
-                <motion.button
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.94 }}
-                  onClick={togglePlay}
-                  className={`w-12 h-12 rounded-full ${sec.primaryBtn} flex items-center justify-center shadow-lg transition-transform cursor-pointer`}
-                  style={{
-                    boxShadow: isPlaying ? sec.borderGlow : undefined,
-                  }}
-                  title={isPlaying ? 'Pause' : 'Play'}
-                  aria-label={isPlaying ? 'Pause music' : 'Play music'}
-                >
-                  {isPlaying ? (
-                    <Pause className={`w-5 h-5 ${sec.primaryBtnIcon}`} />
-                  ) : (
-                    <Play className={`w-5 h-5 ${sec.primaryBtnIcon} ml-0.5`} />
-                  )}
-                </motion.button>
+                {/* 3. Primary Play / Pause Button (DEAD CENTER) */}
+                <div className="flex justify-center">
+                  <motion.button
+                    whileHover={{ scale: 1.08 }}
+                    whileTap={{ scale: 0.94 }}
+                    onClick={togglePlay}
+                    className={`w-13 h-13 rounded-full ${sec.primaryBtn} flex items-center justify-center shadow-lg transition-transform cursor-pointer`}
+                    style={{
+                      boxShadow: isPlaying ? sec.borderGlow : undefined,
+                    }}
+                    title={isPlaying ? 'Pause' : 'Play'}
+                    aria-label={isPlaying ? 'Pause music' : 'Play music'}
+                  >
+                    {isPlaying ? (
+                      <Pause className={`w-5 h-5 ${sec.primaryBtnIcon}`} />
+                    ) : (
+                      <Play className={`w-5 h-5 ${sec.primaryBtnIcon} ml-0.5`} />
+                    )}
+                  </motion.button>
+                </div>
 
-                {/* Forward 10s */}
-                <button
-                  onClick={() => handleSkip(10)}
-                  className="p-2 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-                  title="Skip 10 seconds"
-                  aria-label="Skip 10 seconds"
-                >
-                  <RotateCw className="w-4 h-4" />
-                </button>
+                {/* 4. Forward 10s (Mid-Right) */}
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => handleSkip(10)}
+                    className="p-2.5 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                    title="Skip 10 seconds"
+                    aria-label="Skip 10 seconds"
+                  >
+                    <RotateCw className="w-4.5 h-4.5" />
+                  </button>
+                </div>
+
+                {/* 5. Restart Button (Right Anchor for Perfect Symmetry) */}
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => {
+                      if (audioRef.current) {
+                        audioRef.current.currentTime = 0;
+                        setCurrentTime(0);
+                      }
+                    }}
+                    className="p-2.5 rounded-full text-zinc-500 hover:text-zinc-300 hover:bg-white/5 transition-colors cursor-pointer"
+                    title="Restart track from beginning"
+                    aria-label="Restart track"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 opacity-60" />
+                  </button>
+                </div>
               </div>
 
               {/* Volume Slider Bar */}
-              <div className="pt-3.5 flex items-center gap-3">
-                <Volume2 className="w-3.5 h-3.5 text-zinc-400" />
+              <div className="pt-3.5 flex items-center gap-3 px-1">
+                <Volume2 className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
                 <input
                   type="range"
                   min="0"
@@ -679,9 +707,14 @@ export const MusicPlayer = () => {
                   value={volume}
                   onChange={(e) => setVolume(parseFloat(e.target.value))}
                   aria-label="Volume slider"
-                  className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-[var(--theme-primary)]"
+                  className="player-slider w-full cursor-pointer focus:outline-none"
+                  style={{
+                    background: `linear-gradient(to right, var(--theme-primary) 0%, var(--theme-primary) ${Math.round(
+                      volume * 100
+                    )}%, #27272a ${Math.round(volume * 100)}%, #27272a 100%)`,
+                  }}
                 />
-                <span className="text-[10px] font-mono text-zinc-400 w-8 text-right">
+                <span className="text-[10px] font-mono text-zinc-400 w-8 text-right flex-shrink-0">
                   {Math.round(volume * 100)}%
                 </span>
               </div>
