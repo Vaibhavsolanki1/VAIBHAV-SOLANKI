@@ -17,9 +17,6 @@ import crimsonMascot from '../assets/mascot.webp';
 import noirMascot from '../assets/noir_mascot.webp';
 import cosmicMascot from '../assets/cosmic_mascot.webp';
 
-// Offset to skip intro/silence
-const START_OFFSET = 5;
-
 const formatTime = (seconds: number): string => {
   if (isNaN(seconds) || seconds < 0) return '0:00';
   const mins = Math.floor(seconds / 60);
@@ -102,13 +99,14 @@ export const MusicPlayer = () => {
   // By default playing as requested
   const [isPlaying, setIsPlaying] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
-  const [currentTime, setCurrentTime] = useState(START_OFFSET);
+  const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.8);
+  const [volume, setVolume] = useState(0.85);
   const [isLooping, setIsLooping] = useState(true);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isDraggingRef = useRef(false);
+  const userPausedRef = useRef(false);
 
   // Styling based on secondary colour for active theme
   const sec = getDiscSecondaryStyle(theme);
@@ -121,72 +119,78 @@ export const MusicPlayer = () => {
       ? cosmicMascot
       : crimsonMascot;
 
-  // Auto-play by default on initial mount with user-gesture fallback
+  // Resilient autoplay on mount with immediate user-gesture unlock
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    let hasStarted = false;
+    let hasCleanedUp = false;
 
-    const attemptPlay = () => {
-      if (hasStarted || !audio) return;
-      if (audio.currentTime < START_OFFSET) {
-        try {
-          audio.currentTime = START_OFFSET;
-        } catch {
-          // May throw if metadata is not yet ready; handled by onLoadedMetadata
-        }
-      }
+    const tryPlay = () => {
+      if (hasCleanedUp || !audio || userPausedRef.current) return;
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            hasStarted = true;
             setIsPlaying(true);
-            cleanupListeners();
+            removeListeners();
           })
           .catch(() => {
-            // Browser blocked unprompted autoplay, wait for first user gesture
+            // Autoplay blocked by browser policy; waiting for user interaction
           });
       }
     };
 
-    const handleFirstGesture = () => {
-      attemptPlay();
+    const handleUserGesture = () => {
+      if (!userPausedRef.current && audio && audio.paused) {
+        tryPlay();
+      }
     };
 
-    const events = ['click', 'pointerdown', 'keydown', 'touchstart', 'scroll'];
-    const cleanupListeners = () => {
-      events.forEach((ev) => window.removeEventListener(ev, handleFirstGesture));
+    const gestureEvents = [
+      'pointerdown',
+      'click',
+      'touchstart',
+      'touchend',
+      'keydown',
+      'scroll',
+      'wheel',
+    ];
+
+    const removeListeners = () => {
+      gestureEvents.forEach((ev) => {
+        window.removeEventListener(ev, handleUserGesture);
+        document.removeEventListener(ev, handleUserGesture);
+      });
     };
 
-    // Attempt immediately
-    attemptPlay();
+    // 1. Attempt immediate autoplay
+    tryPlay();
 
-    // Register fallback listeners for first touch/click/scroll
-    events.forEach((ev) => {
-      window.addEventListener(ev, handleFirstGesture, { passive: true, once: true });
+    // 2. Attach gesture listeners for instant unlock on first interaction
+    gestureEvents.forEach((ev) => {
+      window.addEventListener(ev, handleUserGesture, { passive: true });
+      document.addEventListener(ev, handleUserGesture, { passive: true });
     });
 
     return () => {
-      cleanupListeners();
+      hasCleanedUp = true;
+      removeListeners();
     };
   }, []);
 
-  // Sync volume with audio element (loop is handled manually to restart at START_OFFSET)
+  // Sync volume & loop with audio element
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
-      audioRef.current.loop = false;
+      audioRef.current.loop = isLooping;
     }
-  }, [volume]);
+  }, [volume, isLooping]);
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current) return;
     if (audioRef.current.paused) {
-      if (audioRef.current.currentTime < START_OFFSET) {
-        audioRef.current.currentTime = START_OFFSET;
-      }
+      userPausedRef.current = false;
       audioRef.current
         .play()
         .then(() => setIsPlaying(true))
@@ -194,6 +198,7 @@ export const MusicPlayer = () => {
           console.warn('Playback prevented by browser policy:', err);
         });
     } else {
+      userPausedRef.current = true;
       audioRef.current.pause();
       setIsPlaying(false);
     }
@@ -249,17 +254,6 @@ export const MusicPlayer = () => {
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
-      if (audioRef.current.currentTime < START_OFFSET) {
-        audioRef.current.currentTime = START_OFFSET;
-        setCurrentTime(START_OFFSET);
-      }
-    }
-  };
-
-  const handleCanPlay = () => {
-    if (audioRef.current && audioRef.current.currentTime < START_OFFSET) {
-      audioRef.current.currentTime = START_OFFSET;
-      setCurrentTime(START_OFFSET);
     }
   };
 
@@ -274,7 +268,7 @@ export const MusicPlayer = () => {
   const handleSkip = (offsetSeconds: number) => {
     if (audioRef.current) {
       const newTime = Math.max(
-        START_OFFSET,
+        0,
         Math.min(duration, audioRef.current.currentTime + offsetSeconds)
       );
       audioRef.current.currentTime = newTime;
@@ -283,12 +277,7 @@ export const MusicPlayer = () => {
   };
 
   const handleEnded = () => {
-    if (isLooping && audioRef.current) {
-      // Loop back to START_OFFSET (skip intro 5 sec on repeat)
-      audioRef.current.currentTime = START_OFFSET;
-      setCurrentTime(START_OFFSET);
-      audioRef.current.play().catch(() => {});
-    } else {
+    if (!isLooping) {
       setIsPlaying(false);
     }
   };
@@ -315,22 +304,17 @@ export const MusicPlayer = () => {
 
   return (
     <>
-      {/* Hidden HTML5 Audio Element with autoPlay & media fragment #t=5 */}
+      {/* Hidden HTML5 Audio Element with autoPlay & preload */}
       <audio
         ref={audioRef}
-        src={`${terrorAudio}#t=${START_OFFSET}`}
+        src={terrorAudio}
         autoPlay
-        preload="metadata"
+        loop={isLooping}
+        preload="auto"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onCanPlay={handleCanPlay}
         onEnded={handleEnded}
-        onPlay={() => {
-          if (audioRef.current && audioRef.current.currentTime < START_OFFSET) {
-            audioRef.current.currentTime = START_OFFSET;
-          }
-          setIsPlaying(true);
-        }}
+        onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
       />
 
