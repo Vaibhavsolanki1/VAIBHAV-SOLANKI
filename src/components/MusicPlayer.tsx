@@ -6,7 +6,6 @@ import {
   RotateCcw,
   RotateCw,
   Volume2,
-  VolumeX,
   X,
   Repeat,
   Music,
@@ -106,7 +105,6 @@ export const MusicPlayer = () => {
   const [currentTime, setCurrentTime] = useState(START_OFFSET);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.8);
-  const [isMuted, setIsMuted] = useState(false);
   const [isLooping, setIsLooping] = useState(true);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -175,13 +173,13 @@ export const MusicPlayer = () => {
     };
   }, []);
 
-  // Sync volume & loop with audio element (loop is handled manually to restart at START_OFFSET)
+  // Sync volume with audio element (loop is handled manually to restart at START_OFFSET)
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = isMuted ? 0 : volume;
+      audioRef.current.volume = volume;
       audioRef.current.loop = false;
     }
-  }, [volume, isMuted]);
+  }, [volume]);
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current) return;
@@ -684,20 +682,6 @@ export const MusicPlayer = () => {
                 >
                   <RotateCw className="w-4 h-4" />
                 </button>
-
-                {/* Mute / Unmute */}
-                <button
-                  onClick={() => setIsMuted((prev) => !prev)}
-                  className={`p-2 rounded-full transition-colors cursor-pointer ${
-                    isMuted
-                      ? 'text-red-400 bg-red-500/10'
-                      : 'text-zinc-300 hover:text-white hover:bg-white/10'
-                  }`}
-                  title={isMuted ? 'Unmute' : 'Mute'}
-                  aria-label="Toggle mute"
-                >
-                  {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                </button>
               </div>
 
               {/* Volume Slider Bar */}
@@ -708,17 +692,13 @@ export const MusicPlayer = () => {
                   min="0"
                   max="1"
                   step="0.01"
-                  value={isMuted ? 0 : volume}
-                  onChange={(e) => {
-                    const newVol = parseFloat(e.target.value);
-                    setVolume(newVol);
-                    if (isMuted && newVol > 0) setIsMuted(false);
-                  }}
+                  value={volume}
+                  onChange={(e) => setVolume(parseFloat(e.target.value))}
                   aria-label="Volume slider"
                   className="w-full h-1 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-[var(--theme-primary)]"
                 />
                 <span className="text-[10px] font-mono text-zinc-400 w-8 text-right">
-                  {Math.round((isMuted ? 0 : volume) * 100)}%
+                  {Math.round(volume * 100)}%
                 </span>
               </div>
 
