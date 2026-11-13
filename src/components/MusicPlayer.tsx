@@ -18,6 +18,9 @@ import crimsonMascot from '../assets/mascot.webp';
 import noirMascot from '../assets/noir_mascot.webp';
 import cosmicMascot from '../assets/cosmic_mascot.webp';
 
+// Offset to skip intro/silence
+const START_OFFSET = 5;
+
 const formatTime = (seconds: number): string => {
   if (isNaN(seconds) || seconds < 0) return '0:00';
   const mins = Math.floor(seconds / 60);
@@ -100,7 +103,7 @@ export const MusicPlayer = () => {
   // By default playing as requested
   const [isPlaying, setIsPlaying] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [currentTime, setCurrentTime] = useState(START_OFFSET);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
@@ -129,6 +132,13 @@ export const MusicPlayer = () => {
 
     const attemptPlay = () => {
       if (hasStarted || !audio) return;
+      if (audio.currentTime < START_OFFSET) {
+        try {
+          audio.currentTime = START_OFFSET;
+        } catch {
+          // May throw if metadata is not yet ready; handled by onLoadedMetadata
+        }
+      }
       const playPromise = audio.play();
       if (playPromise !== undefined) {
         playPromise
@@ -165,17 +175,20 @@ export const MusicPlayer = () => {
     };
   }, []);
 
-  // Sync volume & loop with audio element
+  // Sync volume & loop with audio element (loop is handled manually to restart at START_OFFSET)
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = isMuted ? 0 : volume;
-      audioRef.current.loop = isLooping;
+      audioRef.current.loop = false;
     }
-  }, [volume, isMuted, isLooping]);
+  }, [volume, isMuted]);
 
   const togglePlay = useCallback(() => {
     if (!audioRef.current) return;
     if (audioRef.current.paused) {
+      if (audioRef.current.currentTime < START_OFFSET) {
+        audioRef.current.currentTime = START_OFFSET;
+      }
       audioRef.current
         .play()
         .then(() => setIsPlaying(true))
@@ -238,6 +251,17 @@ export const MusicPlayer = () => {
   const handleLoadedMetadata = () => {
     if (audioRef.current) {
       setDuration(audioRef.current.duration);
+      if (audioRef.current.currentTime < START_OFFSET) {
+        audioRef.current.currentTime = START_OFFSET;
+        setCurrentTime(START_OFFSET);
+      }
+    }
+  };
+
+  const handleCanPlay = () => {
+    if (audioRef.current && audioRef.current.currentTime < START_OFFSET) {
+      audioRef.current.currentTime = START_OFFSET;
+      setCurrentTime(START_OFFSET);
     }
   };
 
@@ -251,14 +275,22 @@ export const MusicPlayer = () => {
 
   const handleSkip = (offsetSeconds: number) => {
     if (audioRef.current) {
-      const newTime = Math.max(0, Math.min(duration, audioRef.current.currentTime + offsetSeconds));
+      const newTime = Math.max(
+        START_OFFSET,
+        Math.min(duration, audioRef.current.currentTime + offsetSeconds)
+      );
       audioRef.current.currentTime = newTime;
       setCurrentTime(newTime);
     }
   };
 
   const handleEnded = () => {
-    if (!isLooping) {
+    if (isLooping && audioRef.current) {
+      // Loop back to START_OFFSET (skip intro 5 sec on repeat)
+      audioRef.current.currentTime = START_OFFSET;
+      setCurrentTime(START_OFFSET);
+      audioRef.current.play().catch(() => {});
+    } else {
       setIsPlaying(false);
     }
   };
@@ -285,16 +317,22 @@ export const MusicPlayer = () => {
 
   return (
     <>
-      {/* Hidden HTML5 Audio Element with autoPlay */}
+      {/* Hidden HTML5 Audio Element with autoPlay & media fragment #t=5 */}
       <audio
         ref={audioRef}
-        src={terrorAudio}
+        src={`${terrorAudio}#t=${START_OFFSET}`}
         autoPlay
         preload="metadata"
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
+        onCanPlay={handleCanPlay}
         onEnded={handleEnded}
-        onPlay={() => setIsPlaying(true)}
+        onPlay={() => {
+          if (audioRef.current && audioRef.current.currentTime < START_OFFSET) {
+            audioRef.current.currentTime = START_OFFSET;
+          }
+          setIsPlaying(true);
+        }}
         onPause={() => setIsPlaying(false)}
       />
 
