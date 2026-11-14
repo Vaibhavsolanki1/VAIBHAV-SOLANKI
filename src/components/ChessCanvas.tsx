@@ -2,7 +2,7 @@ import { Suspense, useRef, useState, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Center, ContactShadows, useTexture } from '@react-three/drei';
 import * as THREE from 'three';
-import { Loader2, Rotate3d, Sparkles, Swords, RefreshCw } from 'lucide-react';
+import { Loader2, Rotate3d, Sparkles, Swords, RefreshCw, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 // Generates smooth Staunton-style rotational profile curves for Three.js LatheGeometry
 function createPawnPoints(): THREE.Vector2[] {
@@ -283,6 +283,7 @@ export const ChessCanvas = () => {
   const [selectedPieceId, setSelectedPieceId] = useState<string | null>(null);
   const [isInteracting, setIsInteracting] = useState(false);
   const [tacticalStep, setTacticalStep] = useState(0);
+  const controlsRef = useRef<any>(null);
 
   const tacticalMoves = [
     { desc: '1. e4 e5 (Italian Game)', evalStr: '+0.3' },
@@ -299,10 +300,39 @@ export const ChessCanvas = () => {
     setPieces(INITIAL_PIECES);
     setSelectedPieceId(null);
     setTacticalStep(0);
+    if (controlsRef.current) {
+      controlsRef.current.reset();
+    }
+  };
+
+  const handleZoomIn = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (controlsRef.current) {
+      controlsRef.current.dollyIn(1.3);
+      controlsRef.current.update();
+    }
+  };
+
+  const handleZoomOut = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (controlsRef.current) {
+      controlsRef.current.dollyOut(1.3);
+      controlsRef.current.update();
+    }
+  };
+
+  const handleResetZoom = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (controlsRef.current) {
+      controlsRef.current.reset();
+    }
   };
 
   return (
-    <div className="relative w-full rounded-2xl bg-neutral-950/90 border border-white/10 overflow-hidden shadow-2xl group">
+    <div
+      data-lenis-prevent="true"
+      className="relative w-full rounded-2xl bg-neutral-950/90 border border-white/10 overflow-hidden shadow-2xl group overscroll-contain"
+    >
       {/* Top Header & Tactical Evaluation */}
       <div className="relative z-20 flex items-center justify-between px-3.5 py-2.5 bg-neutral-900/80 border-b border-white/10 backdrop-blur-md">
         <div className="flex items-center gap-2">
@@ -340,7 +370,41 @@ export const ChessCanvas = () => {
       </div>
 
       {/* 3D WebGL Canvas */}
-      <div className="relative h-64 sm:h-72 w-full cursor-grab active:cursor-grabbing">
+      <div
+        data-lenis-prevent="true"
+        className="relative h-64 sm:h-72 w-full cursor-grab active:cursor-grabbing overscroll-contain"
+      >
+        {/* Floating Zoom Controls Bar */}
+        <div className="absolute top-2.5 right-3 z-30 flex items-center gap-1 bg-neutral-900/90 border border-white/10 rounded-lg p-1 backdrop-blur-md shadow-lg">
+          <button
+            type="button"
+            onClick={handleZoomIn}
+            className="p-1.5 rounded hover:bg-white/15 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+            title="Zoom In"
+            aria-label="Zoom in"
+          >
+            <ZoomIn className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleZoomOut}
+            className="p-1.5 rounded hover:bg-white/15 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+            title="Zoom Out"
+            aria-label="Zoom out"
+          >
+            <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleResetZoom}
+            className="p-1.5 rounded hover:bg-white/15 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            title="Reset Camera"
+            aria-label="Reset camera"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
         <Suspense
           fallback={
             <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-neutral-950 text-zinc-400 font-mono text-xs">
@@ -373,12 +437,23 @@ export const ChessCanvas = () => {
               onSelectPiece={(id) => setSelectedPieceId(id)}
             />
 
-            {/* Orbit Controls (360 Degree View) */}
+            {/* Orbit Controls (360 Degree View & Drag Zoom) */}
             <OrbitControls
+              ref={controlsRef}
               enableZoom={true}
-              minDistance={5}
-              maxDistance={14}
+              zoomSpeed={1.4}
+              minDistance={4}
+              maxDistance={18}
               enablePan={false}
+              mouseButtons={{
+                LEFT: THREE.MOUSE.ROTATE,
+                MIDDLE: THREE.MOUSE.DOLLY,
+                RIGHT: THREE.MOUSE.DOLLY,
+              }}
+              touches={{
+                ONE: THREE.TOUCH.ROTATE,
+                TWO: THREE.TOUCH.DOLLY_PAN,
+              }}
               autoRotate={!isInteracting && selectedPieceId === null}
               autoRotateSpeed={1.0}
               minPolarAngle={Math.PI / 6}
@@ -390,7 +465,7 @@ export const ChessCanvas = () => {
         {/* 3D Orbit Helper Badge */}
         <div className="absolute bottom-2.5 left-3 pointer-events-none z-10 flex items-center gap-1.5 px-2 py-1 rounded-md bg-neutral-950/80 border border-white/10 text-[10px] font-mono text-zinc-400 backdrop-blur-md">
           <Rotate3d className="w-3 h-3 text-amber-400" />
-          <span>Drag to rotate 360° · Click piece to inspect</span>
+          <span>Left-drag rotate · Right-drag/scroll zoom</span>
         </div>
 
         {/* Tactical Annotation */}
@@ -405,3 +480,4 @@ export const ChessCanvas = () => {
 };
 
 export default ChessCanvas;
+

@@ -2,7 +2,7 @@ import { Suspense, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { useGLTF, OrbitControls, Center, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
-import { Loader2, Rotate3d, Zap } from 'lucide-react';
+import { Loader2, Rotate3d, Zap, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 interface F1CarModelProps {
   isDrsActive: boolean;
@@ -49,9 +49,36 @@ export const F1CarCanvas = ({
   accentColor = '#ef4444',
 }: F1CarCanvasProps) => {
   const [isInteracting, setIsInteracting] = useState(false);
+  const controlsRef = useRef<any>(null);
+
+  const handleZoomIn = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (controlsRef.current) {
+      controlsRef.current.dollyIn(1.3);
+      controlsRef.current.update();
+    }
+  };
+
+  const handleZoomOut = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (controlsRef.current) {
+      controlsRef.current.dollyOut(1.3);
+      controlsRef.current.update();
+    }
+  };
+
+  const handleResetZoom = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (controlsRef.current) {
+      controlsRef.current.reset();
+    }
+  };
 
   return (
-    <div className="relative w-full rounded-2xl bg-neutral-950/90 border border-white/10 overflow-hidden shadow-2xl group">
+    <div
+      data-lenis-prevent="true"
+      className="relative w-full rounded-2xl bg-neutral-950/90 border border-white/10 overflow-hidden shadow-2xl group overscroll-contain"
+    >
       {/* Dynamic 3D DRS Wind Tunnel Light Sheen */}
       {isDrsActive && (
         <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
@@ -108,7 +135,41 @@ export const F1CarCanvas = ({
       </div>
 
       {/* 3D WebGL Canvas Viewport */}
-      <div className="relative h-64 sm:h-72 w-full cursor-grab active:cursor-grabbing">
+      <div
+        data-lenis-prevent="true"
+        className="relative h-64 sm:h-72 w-full cursor-grab active:cursor-grabbing overscroll-contain"
+      >
+        {/* Floating Zoom & Camera Action Buttons */}
+        <div className="absolute top-2.5 right-3 z-30 flex items-center gap-1 bg-neutral-900/90 border border-white/10 rounded-lg p-1 backdrop-blur-md shadow-lg">
+          <button
+            type="button"
+            onClick={handleZoomIn}
+            className="p-1.5 rounded hover:bg-white/15 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+            title="Zoom In"
+            aria-label="Zoom in"
+          >
+            <ZoomIn className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleZoomOut}
+            className="p-1.5 rounded hover:bg-white/15 text-zinc-300 hover:text-white transition-colors cursor-pointer"
+            title="Zoom Out"
+            aria-label="Zoom out"
+          >
+            <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={handleResetZoom}
+            className="p-1.5 rounded hover:bg-white/15 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            title="Reset View"
+            aria-label="Reset view"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
         <Suspense
           fallback={
             <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-neutral-950 text-zinc-400 font-mono text-xs">
@@ -142,15 +203,26 @@ export const F1CarCanvas = ({
               far={3}
             />
 
-            {/* Orbit Controls (360 Degree Inspection) */}
+            {/* Orbit Controls (360 Degree Drag & Drag Zoom) */}
             <OrbitControls
+              ref={controlsRef}
               enableZoom={true}
-              minDistance={3.0}
-              maxDistance={7.5}
+              zoomSpeed={1.5}
+              minDistance={1.6}
+              maxDistance={12.0}
               enablePan={false}
+              mouseButtons={{
+                LEFT: THREE.MOUSE.ROTATE,
+                MIDDLE: THREE.MOUSE.DOLLY,
+                RIGHT: THREE.MOUSE.DOLLY,
+              }}
+              touches={{
+                ONE: THREE.TOUCH.ROTATE,
+                TWO: THREE.TOUCH.DOLLY_PAN,
+              }}
               autoRotate={!isInteracting && !isDrsActive}
               autoRotateSpeed={1.8}
-              minPolarAngle={Math.PI / 4}
+              minPolarAngle={Math.PI / 6}
               maxPolarAngle={Math.PI / 2.05}
             />
           </Canvas>
@@ -159,7 +231,7 @@ export const F1CarCanvas = ({
         {/* 3D Orbit Helper Badge */}
         <div className="absolute bottom-2.5 left-3 pointer-events-none z-10 flex items-center gap-1.5 px-2 py-1 rounded-md bg-neutral-950/80 border border-white/10 text-[10px] font-mono text-zinc-400 backdrop-blur-md">
           <Rotate3d className="w-3 h-3 text-red-400" />
-          <span>Drag to rotate 360° · Scroll to zoom</span>
+          <span>Left-drag rotate · Right-drag/scroll zoom</span>
         </div>
 
         {/* Real-Time Telemetry Readout Overlay */}
@@ -182,3 +254,4 @@ export const F1CarCanvas = ({
 };
 
 export default F1CarCanvas;
+
