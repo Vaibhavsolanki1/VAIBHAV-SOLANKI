@@ -4,9 +4,10 @@ import { Trophy, Brain, Flag, Cpu, ExternalLink } from 'lucide-react';
 import { GlassmorphicCard } from '../components/GlassmorphicCard';
 import { useCodeforces } from '../hooks/useCodeforces';
 import { useTheme } from '../context/ThemeContext';
+import { F1CarCanvas } from '../components/F1CarCanvas';
 
 export const Chapter6_Beyond = () => {
-  const [carPos, setCarPos] = useState(0);
+  const [isDrsActive, setIsDrsActive] = useState(false);
   const cf = useCodeforces('vaibhav2927');
   const { theme } = useTheme();
   const isMono = theme === 'mono';
@@ -14,8 +15,7 @@ export const Chapter6_Beyond = () => {
   const accentHex = isMono ? '#ffffff' : isCosmic ? '#ec4899' : '#ef4444';
 
   const triggerF1Drive = () => {
-    setCarPos(100);
-    setTimeout(() => setCarPos(0), 2000);
+    setIsDrsActive((prev) => !prev);
   };
 
   return (
@@ -84,7 +84,7 @@ export const Chapter6_Beyond = () => {
           </div>
         </GlassmorphicCard>
 
-        {/* Card 2: Formula 1 */}
+        {/* Card 2: Formula 1 & 3D Interactive Telemetry */}
         <GlassmorphicCard glowColor="pink" className="border-white/10 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -97,47 +97,18 @@ export const Chapter6_Beyond = () => {
             <h3 className="font-display text-2xl font-bold text-white mb-2">
               Formula 1 & Telemetry
             </h3>
-            <p className="text-zinc-300 text-sm font-light leading-relaxed mb-6">
-              High-speed telemetry, pit strategy, and aerodynamic precision.
+            <p className="text-zinc-300 text-sm font-light leading-relaxed mb-4">
+              High-speed telemetry, pit strategy, and aerodynamic precision. Drag to inspect the Red Bull RB22 3D model in 360°.
             </p>
           </div>
 
-          {/* Interactive F1 Drive Track */}
-          <div className="bg-neutral-950 p-4 rounded-xl border border-white/10">
-            <div className="flex items-center justify-between text-xs font-mono text-zinc-400 mb-3">
-              <span>Track Telemetry</span>
-              <button
-                onClick={triggerF1Drive}
-                className="px-2.5 py-1 rounded bg-red-600 hover:bg-red-500 text-white font-semibold transition-colors cursor-pointer"
-              >
-                Launch DRS
-              </button>
-            </div>
-
-            <div className="relative h-10 bg-neutral-900 rounded-lg overflow-hidden border border-neutral-800 flex items-center px-2">
-              <div className="absolute inset-x-0 top-1/2 h-0.5 border-b border-dashed border-neutral-700" />
-              <motion.div
-                animate={{ x: carPos === 100 ? 320 : 0 }}
-                transition={{ duration: 1.5, ease: 'easeInOut' }}
-                className="relative z-10 flex items-center"
-              >
-                <svg
-                  viewBox="0 0 48 20"
-                  className={`w-9 h-4 text-red-500 ${
-                    isMono
-                      ? 'drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]'
-                      : isCosmic
-                      ? 'drop-shadow-[0_0_8px_rgba(236,72,153,0.65)]'
-                      : 'drop-shadow-[0_0_8px_rgba(239,68,68,0.6)]'
-                  }`}
-                >
-                  <path d="M4 13 L12 8 L28 8 L40 11 L46 13 L46 15 L4 15 Z" fill="currentColor" />
-                  <rect x="2" y="10" width="4" height="3" rx="0.5" fill="#ffffff" />
-                  <circle cx="13" cy="15.5" r="3" fill="#0a0a0a" stroke="#ffffff" strokeWidth="1.2" />
-                  <circle cx="37" cy="15.5" r="3" fill="#0a0a0a" stroke="#ffffff" strokeWidth="1.2" />
-                </svg>
-              </motion.div>
-            </div>
+          {/* Interactive 3D F1 Car Canvas with Real-Time DRS & Telemetry */}
+          <div className="mt-2">
+            <F1CarCanvas
+              isDrsActive={isDrsActive}
+              onToggleDrs={triggerF1Drive}
+              accentColor={accentHex}
+            />
           </div>
         </GlassmorphicCard>
 
