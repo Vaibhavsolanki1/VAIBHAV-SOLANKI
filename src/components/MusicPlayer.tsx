@@ -6,6 +6,7 @@ import {
   RotateCcw,
   RotateCw,
   Volume2,
+  VolumeX,
   X,
   Repeat,
   Music,
@@ -94,10 +95,21 @@ const getDiscSecondaryStyle = (themeName: 'crimson' | 'mono' | 'cosmic') => {
   }
 };
 
+const USER_MUTED_STORAGE_KEY = 'vs_music_muted';
+
+const getInitialMutedState = (): boolean => {
+  try {
+    return localStorage.getItem(USER_MUTED_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
 export const MusicPlayer = () => {
   const { theme } = useTheme();
-  // By default playing as requested
-  const [isPlaying, setIsPlaying] = useState(true);
+  // Persistent mute state: if previously muted, keep off until user explicitly plays
+  const initialMuted = getInitialMutedState();
+  const [isPlaying, setIsPlaying] = useState(!initialMuted);
   const [isOpen, setIsOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -106,7 +118,8 @@ export const MusicPlayer = () => {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const isDraggingRef = useRef(false);
-  const userPausedRef = useRef(false);
+  const userPausedRef = useRef(initialMuted);
+  const prevVolumeRef = useRef(0.85);
 
   // Styling based on secondary colour for active theme
   const sec = getDiscSecondaryStyle(theme);
@@ -119,7 +132,7 @@ export const MusicPlayer = () => {
       ? cosmicMascot
       : crimsonMascot;
 
-  // Resilient autoplay on mount with immediate user-gesture unlock
+  // Resilient autoplay on mount with immediate user-gesture unlock (only if not user-muted)
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -127,6 +140,7 @@ export const MusicPlayer = () => {
     let hasCleanedUp = false;
 
     const tryPlay = () => {
+      // If user has muted/paused the music, DO NOT autoplay or auto-resume
       if (hasCleanedUp || !audio || userPausedRef.current) return;
       const playPromise = audio.play();
       if (playPromise !== undefined) {
@@ -142,6 +156,7 @@ export const MusicPlayer = () => {
     };
 
     const handleUserGesture = () => {
+      // If user has muted/paused the music, keep it off!
       if (!userPausedRef.current && audio && audio.paused) {
         tryPlay();
       }
@@ -164,14 +179,18 @@ export const MusicPlayer = () => {
       });
     };
 
-    // 1. Attempt immediate autoplay
-    tryPlay();
+    // 1. Attempt immediate autoplay only if user has not muted
+    if (!userPausedRef.current) {
+      tryPlay();
+    }
 
-    // 2. Attach gesture listeners for instant unlock on first interaction
-    gestureEvents.forEach((ev) => {
-      window.addEventListener(ev, handleUserGesture, { passive: true });
-      document.addEventListener(ev, handleUserGesture, { passive: true });
-    });
+    // 2. Attach gesture listeners for instant unlock on first interaction (only if not muted)
+    if (!userPausedRef.current) {
+      gestureEvents.forEach((ev) => {
+        window.addEventListener(ev, handleUserGesture, { passive: true });
+        document.addEventListener(ev, handleUserGesture, { passive: true });
+      });
+    }
 
     return () => {
       hasCleanedUp = true;
@@ -191,6 +210,15 @@ export const MusicPlayer = () => {
     if (!audioRef.current) return;
     if (audioRef.current.paused) {
       userPausedRef.current = false;
+      try {
+        localStorage.setItem(USER_MUTED_STORAGE_KEY, 'false');
+      } catch {}
+      // If volume was muted down to 0, restore audibility
+      if (volume <= 0.05) {
+        const restored = prevVolumeRef.current > 0.05 ? prevVolumeRef.current : 0.85;
+        setVolume(restored);
+        audioRef.current.volume = restored;
+      }
       audioRef.current
         .play()
         .then(() => setIsPlaying(true))
@@ -199,10 +227,57 @@ export const MusicPlayer = () => {
         });
     } else {
       userPausedRef.current = true;
+      try {
+        localStorage.setItem(USER_MUTED_STORAGE_KEY, 'true');
+      } catch {}
       audioRef.current.pause();
       setIsPlaying(false);
     }
-  }, []);
+  }, [volume]);
+
+  const toggleMute = () => {
+    if (volume > 0) {
+      prevVolumeRef.current = volume;
+      setVolume(0);
+      userPausedRef.current = true;
+      try {
+        localStorage.setItem(USER_MUTED_STORAGE_KEY, 'true');
+      } catch {}
+      if (audioRef.current) {
+        audioRef.current.volume = 0;
+        audioRef.current.pause();
+      }
+      setIsPlaying(false);
+    } else {
+      const restored = prevVolumeRef.current > 0.05 ? prevVolumeRef.current : 0.85;
+      setVolume(restored);
+      userPausedRef.current = false;
+      try {
+        localStorage.setItem(USER_MUTED_STORAGE_KEY, 'false');
+      } catch {}
+      if (audioRef.current) {
+        audioRef.current.volume = restored;
+        audioRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      }
+    }
+  };
+
+  const handleVolumeChange = (newVol: number) => {
+    setVolume(newVol);
+    if (newVol === 0) {
+      userPausedRef.current = true;
+      try {
+        localStorage.setItem(USER_MUTED_STORAGE_KEY, 'true');
+      } catch {}
+      if (audioRef.current) {
+        audioRef.current.volume = 0;
+        audioRef.current.pause();
+      }
+      setIsPlaying(false);
+    } else {
+      prevVolumeRef.current = newVol;
+    }
+  };
 
   // Handle global shortcuts ('M' to toggle play, 'Shift+M' to toggle player)
   useEffect(() => {
@@ -308,7 +383,7 @@ export const MusicPlayer = () => {
       <audio
         ref={audioRef}
         src={terrorAudio}
-        autoPlay
+        autoPlay={!initialMuted}
         loop={isLooping}
         preload="auto"
         onTimeUpdate={handleTimeUpdate}
@@ -449,7 +524,10 @@ export const MusicPlayer = () => {
       {/* MUSIC PLAYER CENTERED MODAL */}
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            data-lenis-prevent="true"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 overscroll-contain"
+          >
             {/* Backdrop Blur to close on click outside */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -466,7 +544,8 @@ export const MusicPlayer = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 16 }}
               transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
-              className="relative z-10 w-full max-w-sm bg-neutral-950/95 border border-white/15 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-2xl overflow-hidden"
+              data-lenis-prevent="true"
+              className="relative z-10 w-full max-w-sm bg-neutral-950/95 border border-white/15 rounded-3xl p-5 sm:p-6 shadow-2xl backdrop-blur-2xl overflow-hidden overscroll-contain"
               style={{
                 boxShadow: isPlaying
                   ? `0 25px 60px -15px ${sec.haloColor}`
@@ -696,16 +775,28 @@ export const MusicPlayer = () => {
                 </div>
               </div>
 
-              {/* Volume Slider Bar */}
-              <div className="pt-3.5 flex items-center gap-3 px-1">
-                <Volume2 className="w-3.5 h-3.5 text-zinc-400 flex-shrink-0" />
+              {/* Volume Slider Bar with Click-to-Mute Toggle */}
+              <div className="pt-3.5 flex items-center gap-2.5 px-1">
+                <button
+                  type="button"
+                  onClick={toggleMute}
+                  aria-label={volume === 0 || !isPlaying ? 'Unmute music' : 'Mute music'}
+                  className="p-1 rounded text-zinc-400 hover:text-white transition-colors cursor-pointer flex-shrink-0"
+                  title={volume === 0 || !isPlaying ? 'Unmute music' : 'Mute music'}
+                >
+                  {volume === 0 || !isPlaying ? (
+                    <VolumeX className="w-4 h-4 text-red-400" />
+                  ) : (
+                    <Volume2 className="w-4 h-4 text-zinc-400" />
+                  )}
+                </button>
                 <input
                   type="range"
                   min="0"
                   max="1"
                   step="0.01"
                   value={volume}
-                  onChange={(e) => setVolume(parseFloat(e.target.value))}
+                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
                   aria-label="Volume slider"
                   className="player-slider w-full cursor-pointer focus:outline-none"
                   style={{

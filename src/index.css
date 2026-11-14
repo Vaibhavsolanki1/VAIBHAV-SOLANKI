@@ -28,6 +28,7 @@
   --theme-panel: rgba(13, 14, 18, 0.75);
   --theme-border: rgba(255, 255, 255, 0.08);
   --theme-accent: #ef4444;
+  --theme-primary: #ef4444;
   --theme-accent-glow: rgba(239, 68, 68, 0.75);
   --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #ff8080 35%, #ef4444 75%, #f87171 100%);
 }
@@ -38,6 +39,7 @@ html[data-theme="mono"] {
   --theme-panel: rgba(6, 6, 7, 0.92);
   --theme-border: rgba(161, 161, 170, 0.18);
   --theme-accent: #ffffff;
+  --theme-primary: #ffffff;
   --theme-accent-glow: rgba(255, 255, 255, 0.85);
   --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #ffffff 40%, #f4f4f5 75%, #ffffff 100%);
 
@@ -117,6 +119,7 @@ html[data-theme="cosmic"] {
   --theme-panel: rgba(8, 5, 12, 0.9);
   --theme-border: rgba(168, 85, 247, 0.22);
   --theme-accent: #ec4899;
+  --theme-primary: #ec4899;
   --theme-accent-glow: rgba(236, 72, 153, 0.75);
   --theme-text-gradient: linear-gradient(135deg, #ffffff 0%, #f472b6 40%, #ec4899 75%, #d946ef 100%);
 

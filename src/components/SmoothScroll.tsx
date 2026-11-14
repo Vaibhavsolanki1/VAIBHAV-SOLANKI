@@ -16,6 +16,14 @@ export const resetSmoothScroll = () => {
   ScrollTrigger.refresh();
 };
 
+export const stopSmoothScroll = () => {
+  globalLenis?.stop();
+};
+
+export const startSmoothScroll = () => {
+  globalLenis?.start();
+};
+
 interface SmoothScrollProps {
   children: ReactNode;
 }

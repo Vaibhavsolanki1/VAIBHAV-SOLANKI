@@ -27,6 +27,7 @@ import { GithubIcon } from '../components/Icons';
 import { useGitHub } from '../hooks/useGitHub';
 import { useTheme } from '../context/ThemeContext';
 import { formatRelativeTime } from '../services/github';
+import { stopSmoothScroll, startSmoothScroll } from '../components/SmoothScroll';
 
 interface Skill {
   name: string;
@@ -118,7 +119,6 @@ const categories = ['All', 'AI & ML', 'Languages', 'Fullstack', 'Data & Infra'] 
 
 export const Chapter4_Skills = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [hoveredSkill, setHoveredSkill] = useState<Skill | null>(null);
   const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
   const { repos, isLive, isLoading } = useGitHub('vaibhavsolanki1');
   const { theme } = useTheme();
@@ -127,11 +127,25 @@ export const Chapter4_Skills = () => {
 
   useEffect(() => {
     if (!selectedSkill) return;
+
+    // Lock background scrolling (Lenis + native body overflow)
+    stopSmoothScroll();
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setSelectedSkill(null);
     };
     window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
+
+    return () => {
+      startSmoothScroll();
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+      window.removeEventListener('keydown', onKeyDown);
+    };
   }, [selectedSkill]);
 
   const getMatchingWork = (skill: Skill) => {
@@ -217,7 +231,6 @@ export const Chapter4_Skills = () => {
       {/* Interactive Galaxy Grid of Skill Planets */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5 mb-12">
         {filteredSkills.map((skill, idx) => {
-          const isHovered = hoveredSkill?.name === skill.name;
           const isSelected = selectedSkill?.name === skill.name;
           return (
             <motion.div
@@ -226,8 +239,6 @@ export const Chapter4_Skills = () => {
               whileInView={{ scale: 1, opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: idx * 0.05 }}
-              onMouseEnter={() => setHoveredSkill(skill)}
-              onMouseLeave={() => setHoveredSkill(null)}
               onClick={() => setSelectedSkill(skill)}
               role="button"
               tabIndex={0}
@@ -247,9 +258,7 @@ export const Chapter4_Skills = () => {
                 className={`p-5 text-center transition-all duration-300 ${
                   isSelected
                     ? 'border-red-500 bg-neutral-900 -translate-y-1'
-                    : isHovered
-                    ? 'border-red-500/60 bg-neutral-900 -translate-y-1'
-                    : ''
+                    : 'group-hover:border-red-500/50 group-hover:-translate-y-1'
                 }`}
               >
                 {/* Orbital Ring Matte Badge */}
@@ -282,46 +291,6 @@ export const Chapter4_Skills = () => {
         })}
       </div>
 
-      {/* Hover Information Box */}
-      <AnimatePresence>
-        {hoveredSkill && (
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 15 }}
-            className="glass-panel p-6 rounded-2xl border-white/15 max-w-xl mx-auto shadow-2xl flex items-center justify-between gap-6"
-          >
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="p-1.5 rounded-lg bg-white/5 border border-white/10">{hoveredSkill.icon}</span>
-                <h4 className="font-display text-xl font-bold text-white">
-                  {hoveredSkill.name}
-                </h4>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-red-500/10 text-red-300 border border-red-500/20">
-                  {hoveredSkill.category}
-                </span>
-              </div>
-              <p className="text-xs text-neutral-400 font-mono mb-2">
-                Proficiency: {hoveredSkill.proficiency}% ({hoveredSkill.level})
-              </p>
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] text-neutral-400">Deployed in:</span>
-                {hoveredSkill.usedIn.map((proj, i) => (
-                  <span
-                    key={i}
-                    className="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-800 text-neutral-200 border border-white/5"
-                  >
-                    {proj}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="text-right flex-shrink-0">
-              <Sparkles className="w-7 h-7 text-red-500" />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       {/* Floating Tech Stack GitHub Modal */}
       <AnimatePresence>
         {selectedSkill && (() => {
@@ -333,7 +302,8 @@ export const Chapter4_Skills = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedSkill(null)}
-              className="fixed inset-0 z-[70] bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
+              data-lenis-prevent="true"
+              className="fixed inset-0 z-[70] bg-black/75 backdrop-blur-md flex items-center justify-center p-4 overscroll-contain"
             >
               <motion.div
                 key="skill-modal-card"
@@ -342,7 +312,8 @@ export const Chapter4_Skills = () => {
                 exit={{ opacity: 0, scale: 0.94, y: 12 }}
                 transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
                 onClick={(e) => e.stopPropagation()}
-                className={`relative w-full max-w-2xl rounded-2xl bg-zinc-950/95 border border-red-500/40 ${
+                data-lenis-prevent="true"
+                className={`relative w-full max-w-2xl rounded-2xl bg-zinc-950/95 border border-red-500/40 overscroll-contain ${
                   isMono
                     ? 'shadow-[0_25px_70px_rgba(255,255,255,0.14)]'
                     : isCosmic
@@ -353,7 +324,7 @@ export const Chapter4_Skills = () => {
                 {/* Top Crimson Accent Line */}
                 <div className="h-1 w-full bg-gradient-to-r from-red-600 via-red-400 to-zinc-700" />
 
-                <div className="p-6 sm:p-7 max-h-[82vh] overflow-y-auto">
+                <div data-lenis-prevent="true" className="p-6 sm:p-7 max-h-[82vh] overflow-y-auto overscroll-contain">
                   {/* Modal Header */}
                   <div className="flex items-start justify-between gap-4 pb-5 border-b border-white/10">
                     <div className="flex items-center gap-3.5">
