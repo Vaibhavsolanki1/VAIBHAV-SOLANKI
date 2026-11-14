@@ -19,9 +19,8 @@ const ProjectsPage = lazy(() => import('./pages/ProjectsPage'));
 const SkillsPage = lazy(() => import('./pages/SkillsPage'));
 const JourneyPage = lazy(() => import('./pages/JourneyPage'));
 const ContactPage = lazy(() => import('./pages/ContactPage'));
-const AllChaptersPage = lazy(() => import('./pages/AllChaptersPage'));
 
-const validPages: PageId[] = ['home', 'projects', 'skills', 'journey', 'contact', 'all'];
+const validPages: PageId[] = ['home', 'projects', 'skills', 'journey', 'contact'];
 
 const getPageFromHash = (): PageId => {
   const hash = window.location.hash.replace('#/', '').replace('#', '').toLowerCase();
@@ -92,8 +91,6 @@ function MainApp() {
         return <JourneyPage />;
       case 'contact':
         return <ContactPage />;
-      case 'all':
-        return <AllChaptersPage onNavigate={(p) => handlePageChange(p as PageId)} />;
       default:
         return <HomePage onNavigate={(p) => handlePageChange(p as PageId)} />;
     }

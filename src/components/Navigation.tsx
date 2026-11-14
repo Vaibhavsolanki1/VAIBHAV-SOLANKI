@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, Code2, Cpu, Milestone, Mail, Layers } from 'lucide-react';
+import { Sparkles, Code2, Cpu, Milestone, Mail } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import logoImg from '../assets/logo.png';
 
-export type PageId = 'home' | 'projects' | 'skills' | 'journey' | 'contact' | 'all';
+export type PageId = 'home' | 'projects' | 'skills' | 'journey' | 'contact';
 
 interface NavPageItem {
   id: PageId;
@@ -19,7 +19,6 @@ const navPages: NavPageItem[] = [
   { id: 'skills', label: 'Skills & Wins', icon: <Cpu className="w-3.5 h-3.5" /> },
   { id: 'journey', label: 'Journey', icon: <Milestone className="w-3.5 h-3.5" /> },
   { id: 'contact', label: 'Contact', icon: <Mail className="w-3.5 h-3.5" /> },
-  { id: 'all', label: 'All View', icon: <Layers className="w-3.5 h-3.5" /> },
 ];
 
 interface NavigationProps {

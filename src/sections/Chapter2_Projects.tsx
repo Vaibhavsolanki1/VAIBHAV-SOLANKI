@@ -38,8 +38,8 @@ const featuredProjects: Project[] = [
     ],
     gradient: 'from-red-600/30 via-red-950/20 to-zinc-900/30',
     glowColor: 'pink',
-    githubUrl: 'https://github.com/vaibhavsolanki1/maitri',
-    liveUrl: 'https://maitri-ai.vercel.app',
+    githubUrl: 'https://github.com/Vaibhavsolanki1/maitri',
+    liveUrl: 'https://maitri-theta.vercel.app',
     status: 'Flagship Startup',
   },
   {
@@ -57,8 +57,7 @@ const featuredProjects: Project[] = [
     ],
     gradient: 'from-zinc-600/30 via-zinc-800/20 to-red-950/30',
     glowColor: 'pink',
-    githubUrl: 'https://github.com/vaibhavsolanki1/oasis',
-    liveUrl: 'https://oasis-genai.vercel.app',
+    githubUrl: 'https://github.com/Vaibhavsolanki1/Oasis',
     status: 'AI Platform',
   },
   {
@@ -76,8 +75,7 @@ const featuredProjects: Project[] = [
     ],
     gradient: 'from-red-700/30 via-zinc-900/20 to-zinc-800/30',
     glowColor: 'pink',
-    githubUrl: 'https://github.com/vaibhavsolanki1/defnet',
-    liveUrl: 'https://defnet-ai.vercel.app',
+    githubUrl: 'https://github.com/Vaibhavsolanki1/Defenet',
     status: 'Cybersecurity AI',
   },
   {
@@ -95,8 +93,7 @@ const featuredProjects: Project[] = [
     ],
     gradient: 'from-zinc-700/30 via-red-900/20 to-black',
     glowColor: 'pink',
-    githubUrl: 'https://github.com/vaibhavsolanki1/student-passport',
-    liveUrl: 'https://student-passport-web3.vercel.app',
+    githubUrl: 'https://github.com/Vaibhavsolanki1/passport',
     status: 'Web3 & Identity',
   },
 ];
@@ -289,6 +286,11 @@ export const Chapter2_Projects = () => {
                   r.name.toLowerCase() === proj.id.toLowerCase() ||
                   (proj.githubUrl && proj.githubUrl.toLowerCase().includes(r.name.toLowerCase()))
               );
+              const activeLiveUrl =
+                proj.liveUrl ||
+                (liveMatch?.homepage && liveMatch.homepage.startsWith('http')
+                  ? liveMatch.homepage
+                  : undefined);
 
               return (
                 <motion.div
@@ -384,9 +386,9 @@ export const Chapter2_Projects = () => {
                           <span>GitHub</span>
                         </a>
                       )}
-                      {proj.liveUrl && (
+                      {activeLiveUrl && (
                         <a
-                          href={proj.liveUrl}
+                          href={activeLiveUrl}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-semibold transition-all group/btn"

@@ -29,7 +29,6 @@ const shortcutGroups: ShortcutGroup[] = [
       { keys: ['3'], label: 'Skills & Wins' },
       { keys: ['4'], label: 'Journey' },
       { keys: ['5'], label: 'Contact' },
-      { keys: ['6'], label: 'All Chapters' },
       { keys: ['H'], label: 'Back to Home' },
     ],
   },
@@ -91,14 +90,13 @@ export const ShortcutsModal = ({ onNavigate }: ShortcutsModalProps) => {
         return;
       }
 
-      // Page navigation shortcuts 1-6
+      // Page navigation shortcuts 1-5
       const pageMap: Record<string, PageId> = {
         '1': 'home',
         '2': 'projects',
         '3': 'skills',
         '4': 'journey',
         '5': 'contact',
-        '6': 'all',
       };
 
       if (pageMap[e.key]) {

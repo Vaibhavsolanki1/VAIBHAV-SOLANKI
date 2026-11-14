@@ -31,7 +31,6 @@ export const Footer = ({ onNavigate }: FooterProps) => {
     { id: 'skills', label: 'Skills & Wins' },
     { id: 'journey', label: 'Journey' },
     { id: 'contact', label: 'Contact' },
-    { id: 'all', label: 'All View' },
   ];
 
   return (
