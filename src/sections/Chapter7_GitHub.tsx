@@ -31,7 +31,7 @@ const fallbackRepos = [
     language: 'TypeScript',
     stars: 28,
     forks: 7,
-    url: 'https://github.com/vaibhavsolanki1/maitri',
+    url: 'https://github.com/Vaibhavsolanki1/Maitriv2.0',
     pushedAt: new Date().toISOString(),
   },
   {

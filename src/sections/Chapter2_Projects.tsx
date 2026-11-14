@@ -38,7 +38,7 @@ const featuredProjects: Project[] = [
     ],
     gradient: 'from-red-600/30 via-red-950/20 to-zinc-900/30',
     glowColor: 'pink',
-    githubUrl: 'https://github.com/Vaibhavsolanki1/maitri',
+    githubUrl: 'https://github.com/Vaibhavsolanki1/Maitriv2.0',
     liveUrl: 'https://maitri-theta.vercel.app',
     status: 'Flagship Startup',
   },

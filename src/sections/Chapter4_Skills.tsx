@@ -54,7 +54,7 @@ const curatedRepos: CuratedRepo[] = [
     name: 'maitri',
     description: 'AI-powered mental wellness companion with emotion processing, LLM personalization, and PostgreSQL telemetry.',
     language: 'TypeScript / Python',
-    url: 'https://github.com/vaibhavsolanki1/maitri',
+    url: 'https://github.com/Vaibhavsolanki1/Maitriv2.0',
     tags: ['maitri', 'llm', 'agents', 'rag', 'vectors', 'python', 'typescript', 'node.js', 'postgresql', 'supabase'],
   },
   {

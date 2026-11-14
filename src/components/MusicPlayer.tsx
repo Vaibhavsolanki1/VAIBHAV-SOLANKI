@@ -11,6 +11,7 @@ import {
   Repeat,
   Music,
   Radio,
+  Shuffle,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import terrorAudio from '../assets/audio/terror-reble.mp3';
@@ -638,18 +639,24 @@ export const MusicPlayer = () => {
                     </div>
                   </div>
 
-                  {/* Tonearm Needle */}
-                  <motion.div
-                    animate={{ rotate: isPlaying ? 22 : 0 }}
-                    transition={{ duration: 0.4, ease: 'easeOut' }}
-                    className="absolute -top-1 right-1 w-10 h-18 origin-top-right pointer-events-none z-20"
-                  >
-                    <div className="w-1.5 h-14 bg-gradient-to-b from-zinc-200 to-zinc-400 rounded-full shadow-md ml-auto mr-1" />
-                    <div
-                      className="w-3 h-3.5 rounded-sm -mt-0.5 ml-auto mr-0.5 shadow-sm"
-                      style={{ backgroundColor: sec.haloColor }}
-                    />
-                  </motion.div>
+                  {/* Tonearm Needle with Pivot Mount */}
+                  <div className="absolute top-1 right-2 pointer-events-none z-20">
+                    {/* Pivot Mount */}
+                    <div className="w-3.5 h-3.5 rounded-full bg-neutral-800 border border-white/20 shadow-md ml-auto" />
+                    {/* Tonearm Bar pivoting onto record */}
+                    <motion.div
+                      animate={{ rotate: isPlaying ? 24 : 5 }}
+                      transition={{ duration: 0.4, ease: 'easeOut' }}
+                      style={{ transformOrigin: 'top right' }}
+                      className="origin-top-right -mt-1.5 mr-1"
+                    >
+                      <div className="w-1.5 h-14 bg-gradient-to-b from-zinc-200 to-zinc-400 rounded-full shadow-md ml-auto" />
+                      <div
+                        className="w-3 h-3.5 rounded-sm -mt-0.5 ml-auto shadow-sm"
+                        style={{ backgroundColor: sec.haloColor }}
+                      />
+                    </motion.div>
+                  </div>
                 </div>
 
                 {/* Track Information */}
@@ -671,9 +678,30 @@ export const MusicPlayer = () => {
                 </div>
               </div>
 
-              {/* Progress Bar & Timestamps */}
+              {/* Progress Bar & Timestamps - Custom High-Contrast Track */}
               <div className="space-y-1.5 pt-2">
-                <div className="relative flex items-center group w-full">
+                <div className="relative w-full h-5 flex items-center group cursor-pointer">
+                  {/* Base Track */}
+                  <div className="w-full h-1.5 rounded-full bg-white/15 overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-75"
+                      style={{
+                        width: `${progressPercent}%`,
+                        backgroundColor: 'var(--theme-primary, #ef4444)',
+                        boxShadow: isPlaying ? `0 0 10px ${sec.haloColor}` : undefined,
+                      }}
+                    />
+                  </div>
+                  {/* Glowing Slider Thumb Indicator */}
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 rounded-full bg-white border-2 pointer-events-none transition-transform group-hover:scale-125"
+                    style={{
+                      left: `calc(${progressPercent}% - 7px)`,
+                      borderColor: 'var(--theme-primary, #ef4444)',
+                      boxShadow: `0 0 8px rgba(0,0,0,0.6), 0 0 12px ${sec.haloColor}`,
+                    }}
+                  />
+                  {/* Invisible Accessible Range Input for Drag & Click */}
                   <input
                     type="range"
                     min="0"
@@ -682,10 +710,7 @@ export const MusicPlayer = () => {
                     value={currentTime}
                     onChange={handleSeek}
                     aria-label="Seek audio position"
-                    className="player-slider w-full cursor-pointer focus:outline-none"
-                    style={{
-                      background: `linear-gradient(to right, var(--theme-primary) 0%, var(--theme-primary) ${progressPercent}%, #27272a ${progressPercent}%, #27272a 100%)`,
-                    }}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                   />
                 </div>
                 <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 px-0.5">
@@ -696,41 +721,43 @@ export const MusicPlayer = () => {
 
               {/* Playback Controls - 100% Mathematically Centered Grid */}
               <div className="grid grid-cols-5 items-center pt-3.5">
-                {/* 1. Loop toggle (Left) */}
-                <div className="flex justify-start">
+                {/* 1. Shuffle / Random Jump (Far Left) */}
+                <div className="flex items-center justify-center">
                   <button
-                    onClick={() => setIsLooping((prev) => !prev)}
-                    className={`p-2.5 rounded-full transition-colors cursor-pointer ${
-                      isLooping
-                        ? 'text-[var(--theme-primary)] bg-white/5 border border-white/10'
-                        : 'text-zinc-500 hover:text-zinc-300'
-                    }`}
-                    title={isLooping ? 'Loop: On' : 'Loop: Off'}
-                    aria-label="Toggle loop"
+                    onClick={() => {
+                      if (audioRef.current && duration > 0) {
+                        const randomTime = Math.random() * duration;
+                        audioRef.current.currentTime = randomTime;
+                        setCurrentTime(randomTime);
+                      }
+                    }}
+                    className="p-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                    title="Shuffle: Jump to random position"
+                    aria-label="Shuffle position"
                   >
-                    <Repeat className="w-4 h-4" />
+                    <Shuffle className="w-4 h-4" />
                   </button>
                 </div>
 
                 {/* 2. Rewind 10s (Mid-Left) */}
-                <div className="flex justify-center">
+                <div className="flex items-center justify-center">
                   <button
                     onClick={() => handleSkip(-10)}
-                    className="p-2.5 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                    className="p-2 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                     title="Rewind 10 seconds"
                     aria-label="Rewind 10 seconds"
                   >
-                    <RotateCcw className="w-4.5 h-4.5" />
+                    <RotateCcw className="w-5 h-5" />
                   </button>
                 </div>
 
-                {/* 3. Primary Play / Pause Button (DEAD CENTER) */}
-                <div className="flex justify-center">
+                {/* 3. Primary Play / Pause Button (EXACT DEAD CENTER) */}
+                <div className="flex items-center justify-center">
                   <motion.button
                     whileHover={{ scale: 1.08 }}
                     whileTap={{ scale: 0.94 }}
                     onClick={togglePlay}
-                    className={`w-13 h-13 rounded-full ${sec.primaryBtn} flex items-center justify-center shadow-lg transition-transform cursor-pointer`}
+                    className={`w-14 h-14 rounded-full ${sec.primaryBtn} flex items-center justify-center shadow-lg transition-transform cursor-pointer`}
                     style={{
                       boxShadow: isPlaying ? sec.borderGlow : undefined,
                     }}
@@ -746,31 +773,30 @@ export const MusicPlayer = () => {
                 </div>
 
                 {/* 4. Forward 10s (Mid-Right) */}
-                <div className="flex justify-center">
+                <div className="flex items-center justify-center">
                   <button
                     onClick={() => handleSkip(10)}
-                    className="p-2.5 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+                    className="p-2 rounded-full text-zinc-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                     title="Skip 10 seconds"
                     aria-label="Skip 10 seconds"
                   >
-                    <RotateCw className="w-4.5 h-4.5" />
+                    <RotateCw className="w-5 h-5" />
                   </button>
                 </div>
 
-                {/* 5. Restart Button (Right Anchor for Perfect Symmetry) */}
-                <div className="flex justify-end">
+                {/* 5. Loop Toggle (Far Right - Perfect Balance with Shuffle) */}
+                <div className="flex items-center justify-center">
                   <button
-                    onClick={() => {
-                      if (audioRef.current) {
-                        audioRef.current.currentTime = 0;
-                        setCurrentTime(0);
-                      }
-                    }}
-                    className="p-2.5 rounded-full text-zinc-500 hover:text-zinc-300 hover:bg-white/5 transition-colors cursor-pointer"
-                    title="Restart track from beginning"
-                    aria-label="Restart track"
+                    onClick={() => setIsLooping((prev) => !prev)}
+                    className={`p-2 rounded-full transition-colors cursor-pointer ${
+                      isLooping
+                        ? 'text-[var(--theme-primary)] bg-white/10 border border-white/15'
+                        : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'
+                    }`}
+                    title={isLooping ? 'Loop: On' : 'Loop: Off'}
+                    aria-label="Toggle loop"
                   >
-                    <RotateCcw className="w-3.5 h-3.5 opacity-60" />
+                    <Repeat className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -790,21 +816,37 @@ export const MusicPlayer = () => {
                     <Volume2 className="w-4 h-4 text-zinc-400" />
                   )}
                 </button>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={volume}
-                  onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
-                  aria-label="Volume slider"
-                  className="player-slider w-full cursor-pointer focus:outline-none"
-                  style={{
-                    background: `linear-gradient(to right, var(--theme-primary) 0%, var(--theme-primary) ${Math.round(
-                      volume * 100
-                    )}%, #27272a ${Math.round(volume * 100)}%, #27272a 100%)`,
-                  }}
-                />
+                <div className="relative flex-1 h-5 flex items-center group cursor-pointer">
+                  {/* Base Volume Track */}
+                  <div className="w-full h-1.5 rounded-full bg-white/15 overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.round(volume * 100)}%`,
+                        backgroundColor: 'var(--theme-primary, #ef4444)',
+                      }}
+                    />
+                  </div>
+                  {/* Volume Thumb */}
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 pointer-events-none transition-transform group-hover:scale-125"
+                    style={{
+                      left: `calc(${Math.round(volume * 100)}% - 6px)`,
+                      borderColor: 'var(--theme-primary, #ef4444)',
+                      boxShadow: '0 0 6px rgba(0,0,0,0.6)',
+                    }}
+                  />
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={volume}
+                    onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                    aria-label="Volume slider"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                  />
+                </div>
                 <span className="text-[10px] font-mono text-zinc-400 w-8 text-right flex-shrink-0">
                   {Math.round(volume * 100)}%
                 </span>
