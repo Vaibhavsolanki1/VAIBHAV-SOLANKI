@@ -5,6 +5,7 @@ import { GlassmorphicCard } from '../components/GlassmorphicCard';
 import { useCodeforces } from '../hooks/useCodeforces';
 import { useTheme } from '../context/ThemeContext';
 import { F1CarCanvas } from '../components/F1CarCanvas';
+import { ChessCanvas } from '../components/ChessCanvas';
 
 export const Chapter6_Beyond = () => {
   const [isDrsActive, setIsDrsActive] = useState(false);
@@ -44,43 +45,27 @@ export const Chapter6_Beyond = () => {
 
       {/* Main Interactive Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Card 1: Chess & Strategy */}
-        <GlassmorphicCard glowColor="pink" className="border-white/10">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs font-mono text-red-400 bg-red-500/10 px-2.5 py-1 rounded border border-red-500/20">
-              Strategy & Focus
-            </span>
-            <Trophy className="w-5 h-5 text-red-500" />
+        {/* Card 1: Chess & Strategy (3D Interactive Wooden Chess Set) */}
+        <GlassmorphicCard glowColor="pink" className="border-white/10 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs font-mono text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20">
+                Strategy & Focus
+              </span>
+              <Trophy className="w-5 h-5 text-amber-500" />
+            </div>
+
+            <h3 className="font-display text-2xl font-bold text-white mb-2">
+              Chess & Mind Games
+            </h3>
+            <p className="text-zinc-300 text-sm font-light leading-relaxed mb-4">
+              College Chess Club founder. Interactive 3D Wooden Chess Set rendered with authentic wood grains. Drag to rotate 360°, inspect pieces, and explore tactical developments.
+            </p>
           </div>
 
-          <h3 className="font-display text-2xl font-bold text-white mb-2">
-            Chess & Mind Games
-          </h3>
-          <p className="text-zinc-300 text-sm font-light leading-relaxed mb-6">
-            College Chess Club founder. Tactical thinking and pattern recognition under pressure.
-          </p>
-
-          {/* Mini Interactive 4x4 Chess Board Visualizer */}
-          <div className="bg-neutral-950 p-4 rounded-xl border border-white/10 max-w-xs mx-auto">
-            <div className="text-[10px] font-mono text-zinc-400 mb-2 text-center uppercase tracking-wider">
-              Chess Board Visualizer
-            </div>
-            <div className="grid grid-cols-4 gap-1 w-40 h-40 mx-auto border border-red-500/30 p-1 bg-neutral-900 rounded">
-              {[...Array(16)].map((_, i) => {
-                const isBlack = (Math.floor(i / 4) + (i % 4)) % 2 === 1;
-                return (
-                  <motion.div
-                    key={i}
-                    whileHover={{ scale: 1.15 }}
-                    className={`flex items-center justify-center rounded text-xs transition-colors ${
-                      isBlack ? 'bg-red-950/60 text-red-300' : 'bg-white/10 text-white'
-                    }`}
-                  >
-                    {i === 0 ? '♔' : i === 15 ? '♚' : i === 5 ? '♘' : i === 10 ? '♝' : ''}
-                  </motion.div>
-                );
-              })}
-            </div>
+          {/* Interactive 3D Wooden Chess Board */}
+          <div className="mt-2">
+            <ChessCanvas />
           </div>
         </GlassmorphicCard>
 
